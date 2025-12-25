@@ -1,3 +1,0 @@
-../main.cpp:24:5:int main()	1
-../main.cpp:20:14:static void port_pin<port, pin>::set_pin_high() [with long unsigned int port = 1073873920; short unsigned int pin = 128]	1
-../main.cpp:21:14:static void port_pin<port, pin>::set_pin_low() [with long unsigned int port = 1073873920; short unsigned int pin = 128]	1
