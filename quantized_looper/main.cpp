@@ -1,7 +1,12 @@
+#include <memory>
+#include <vector>
+
 #include <main.h>
 #include <gpio.h>
-
 #include <tim.h>
+
+#include "Hardware/led.hpp"
+#include "stm32f767xx.h"
 
 extern "C"
 {
@@ -17,19 +22,54 @@ int main()
     MX_GPIO_Init();
     MX_TIM3_Init();
 
+    std::vector<std::unique_ptr<ledBase>> leds;
+    leds.push_back(std::make_unique<led<TIM_HandleTypeDef>>(
+        &htim3, TIM_CHANNEL_3, MX_TIM3_Init, MX_TIM3_DeInit)
+    );
 
-    int analog_value = 0;
+    leds.push_back(std::make_unique<led<GPIO_TypeDef>>(LD2_GPIO_Port, LD2_Pin));
+    leds.push_back(std::make_unique<led<GPIO_TypeDef>>(LD3_GPIO_Port, LD3_Pin));
+
+        
+    int analogValue = 0;
+    int increment = 6000;
+    int onIdx = 0;
 
     while(true)
     {
-        HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_3);
-        HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
-        htim3.Instance->CCR3 = analog_value;
-        analog_value += 2000;
-        HAL_Delay(1000);
+        for (int i = 0; i < leds.size(); i++)
+        {
+            if (i == onIdx)
+            {
+                leds[i]->setIntensity(analogValue);
+            }
+            else
+            {
+                leds[i]->off();
+            }
+        }
 
-        HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3);
-        HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
         HAL_Delay(500);
+        onIdx++;
+        onIdx = onIdx >= leds.size() ? 0 : onIdx;
+
+        analogValue += increment;
+        if (analogValue > leds[0]->getRange().second || analogValue < leds[0]->getRange().first)
+        {
+            for(int i = 0; i < 4; i++)
+            {
+                for (auto&& led : leds)
+                {
+                    led->on();
+                }
+                HAL_Delay(300);
+                for (auto&& led : leds)
+                {
+                    led->off();
+                }
+                HAL_Delay(100);
+            }
+            increment = -increment;
+        }
     }
 }
