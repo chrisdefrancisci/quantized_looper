@@ -1,0 +1,3 @@
+[submodule "extern/reusable_synth"]
+	path = extern/reusable_synth
+	url = ../reusable_synth/

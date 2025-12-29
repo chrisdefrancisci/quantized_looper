@@ -5,7 +5,7 @@
 #include <gpio.h>
 #include <tim.h>
 
-#include "Hardware/led.hpp"
+#include <quantized_looper/Hardware/led.hpp>
 #include "stm32f767xx.h"
 
 extern "C"

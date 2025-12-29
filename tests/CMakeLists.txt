@@ -14,13 +14,17 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 add_executable(
-  hello_test
-  hello_test.cpp
+  quantized_looper_tests
+#   hello_test.cpp
 )
+
+add_subdirectory(mocks)
+add_subdirectory(tests)
+
 target_link_libraries(
-  hello_test
+  quantized_looper_tests
   GTest::gtest_main
 )
 
 include(GoogleTest)
-gtest_discover_tests(hello_test)
+gtest_discover_tests(quantized_looper_tests)

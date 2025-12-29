@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "../../tests"
+		},
+		{
+			"path": "../../extern/reusable_synth/reusable_synth"
 		}
 	],
 	"settings": {
