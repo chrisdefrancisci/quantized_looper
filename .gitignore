@@ -3,3 +3,4 @@ tests/build/
 quantized_looper/build
 ./extern
 tests/.cache/
+quantized_looper/compile_commands.json
