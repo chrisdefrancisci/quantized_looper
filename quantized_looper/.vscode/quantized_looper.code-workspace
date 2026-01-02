@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "../../extern/reusable_synth/reusable_synth"
+		},
+		{
+			"path": "../../extern/reusable_synth/tests"
 		}
 	],
 	"settings": {
