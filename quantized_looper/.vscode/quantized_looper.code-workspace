@@ -19,6 +19,15 @@
 			"--query-driver=${env:CUBE_BUNDLE_PATH}/st-arm-clang/19.1.6+st.10/bin/starm-clang",
 			"--query-driver=${env:CUBE_BUNDLE_PATH}/st-arm-clang/19.1.6+st.10/bin/starm-clang++"
 		],
-		"stm32cube-ide-clangd.path": "cube"
+		"stm32cube-ide-clangd.path": "cube",
+		"C_Cpp.clang_format_style": "file:${workspaceFolder:quantized_looper}/.clang-format",
+		// "C_Cpp.clang_format_style": "file:${fileWorkspaceFolder}/../.clang-format",
+		"C_Cpp.intelliSenseEngine": "disabled",
+		"editor.formatOnSave": true,
+		"editor.formatOnType": true,
+		"editor.defaultFormatter": null,
+		"[cpp]": {
+			"editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
+		}
 	}
 }
