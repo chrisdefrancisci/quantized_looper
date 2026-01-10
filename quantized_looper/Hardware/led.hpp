@@ -10,7 +10,7 @@
 #include <utility>
 
 // Reusable synth includes
-#include <reusable_synth/Hardware/led.hpp>
+#include <reusable_synth/hardware/led.hpp>
 // #include "reusable_synth/Hardware/led.hpp"
 
 // Hardware includes
@@ -40,6 +40,7 @@ public:
 
     void off() override { HAL_GPIO_WritePin(handle, pin, GPIO_PIN_RESET); }
 
+    int test{};
     void setIntensity(int value) override
     {
         if (value != 0) {

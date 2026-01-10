@@ -13,14 +13,7 @@ extern "C"
     extern void SystemClock_Config();
 }
 
-void
-test()
-{
-    int* a;
-};
-
-int
-main()
+int main()
 {
     HAL_Init();
 

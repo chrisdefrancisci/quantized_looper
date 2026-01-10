@@ -78,8 +78,8 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
-    ..
     ${CMAKE_SOURCE_DIR}
+    ..
     ${CMAKE_SOURCE_DIR}/../extern/reusable_synth/reusable_synth
 )
 
@@ -95,4 +95,5 @@ list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_LIBRARIES ob)
 target_link_libraries(${CMAKE_PROJECT_NAME}
     stm32cubemx
     # Add user defined libraries
+    ReusableSynth
 )
