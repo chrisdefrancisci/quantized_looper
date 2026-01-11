@@ -1,17 +1,38 @@
 #include <memory>
 #include <vector>
 
-#include <gpio.h>
-#include <main.h>
-#include <tim.h>
+#include <reusable_synth/utils/logger.hpp>
 
 #include "stm32f767xx.h"
+#include <gpio.h>
+#include <main.h>
 #include <quantized_looper/Hardware/led.hpp>
+#include <tim.h>
 
 extern "C"
 {
     extern void SystemClock_Config();
 }
+
+class LoggerSingleton
+{
+public:
+    constexpr static int nLogs = 20;
+    constexpr static int logLen = 200;
+    static Logger<nLogs, logLen>* getLogger()
+    {
+        static Logger<nLogs, logLen> instance;
+        return &instance;
+    }
+
+    LoggerSingleton(LoggerSingleton const&) = delete;
+    void operator=(LoggerSingleton const&) = delete;
+
+private:
+    LoggerSingleton() {}
+};
+
+auto logger = LoggerSingleton::getLogger();
 
 int main()
 {
@@ -53,10 +74,12 @@ int main()
                 for (auto&& led : leds) {
                     led->on();
                 }
+                logger->info("Turned LED on");
                 HAL_Delay(300);
                 for (auto&& led : leds) {
                     led->off();
                 }
+                logger->info("Turned LED off");
                 HAL_Delay(100);
             }
             increment = -increment;
