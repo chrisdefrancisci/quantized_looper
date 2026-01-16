@@ -1,4 +1,5 @@
 #include <array>
+#include <chrono>
 #include <cstdint>
 #include <cstring>
 #include <memory>
@@ -40,7 +41,7 @@ private:
 
 auto logger = LoggerSingleton::getLogger();
 
-std::vector<std::unique_ptr<ledBase>>* g_leds = nullptr;
+std::vector<std::unique_ptr<LedBase>>* g_leds = nullptr;
 
 // Tap tempo globals
 static volatile uint32_t last_tap_time = 0;
@@ -164,32 +165,38 @@ int main()
     MX_TIM3_Init();
     MX_USART3_UART_Init();
 
-    std::vector<std::unique_ptr<ledBase>> leds;
-    leds.push_back(std::make_unique<led<TIM_HandleTypeDef>>(
+    std::vector<std::unique_ptr<LedBase>> leds;
+    leds.push_back(std::make_unique<Led<TIM_HandleTypeDef>>(
       &htim3, TIM_CHANNEL_3, MX_TIM3_Init, MX_TIM3_DeInit));
 
-    leds.push_back(std::make_unique<led<GPIO_TypeDef>>(LD2_GPIO_Port, LD2_Pin));
-    leds.push_back(std::make_unique<led<GPIO_TypeDef>>(LD3_GPIO_Port, LD3_Pin));
+    leds.push_back(std::make_unique<Led<GPIO_TypeDef>>(LD2_GPIO_Port, LD2_Pin));
+    leds.push_back(std::make_unique<Led<GPIO_TypeDef>>(LD3_GPIO_Port, LD3_Pin));
 
     g_leds = &leds;
 
-    std::array<task_control_block<uint32_t>, 4> tasks = {
-        task_control_block<uint32_t>(fade_led0,
-                                     HAL_GetTick,
-                                     timer<uint32_t>::milliseconds(20),
-                                     timer<uint32_t>::milliseconds(0)),
-        task_control_block<uint32_t>(toggle_led1,
-                                     HAL_GetTick,
-                                     timer<uint32_t>::milliseconds(800),
-                                     timer<uint32_t>::milliseconds(0)),
-        task_control_block<uint32_t>(toggle_led2,
-                                     HAL_GetTick,
-                                     timer<uint32_t>::milliseconds(600),
-                                     timer<uint32_t>::milliseconds(0)),
-        task_control_block<uint32_t>(task_print_logs,
-                                     HAL_GetTick,
-                                     timer<uint32_t>::milliseconds(100),
-                                     timer<uint32_t>::milliseconds(0))
+    using millis = std::chrono::duration<uint32_t, std::milli>;
+
+    std::array<TaskControlBlock<millis>, 4> tasks = {
+        TaskControlBlock<millis>(
+          fade_led0,
+          []() -> millis { return millis(HAL_GetTick()); },
+          millis(20),
+          millis(0)),
+        TaskControlBlock<millis>(
+          toggle_led1,
+          []() -> millis { return millis(HAL_GetTick()); },
+          millis(800),
+          millis(0)),
+        TaskControlBlock<millis>(
+          toggle_led2,
+          []() -> millis { return millis(HAL_GetTick()); },
+          millis(600),
+          millis(0)),
+        TaskControlBlock<millis>(
+          task_print_logs,
+          []() -> millis { return millis(HAL_GetTick()); },
+          millis(100),
+          millis(0))
     };
 
     scheduler(tasks);

@@ -23,7 +23,7 @@
  * @tparam GPIO_TypeDef
  */
 template<>
-class led<GPIO_TypeDef> : public ledBase
+class Led<GPIO_TypeDef> : public LedBase
 {
 public:
     /**
@@ -32,7 +32,7 @@ public:
      * @param handle GPIO handle
      * @param pin Pin number
      */
-    led(GPIO_TypeDef* handle, unsigned int pin)
+    Led(GPIO_TypeDef* handle, unsigned int pin)
       : handle(handle)
       , pin(pin) {};
 
@@ -69,18 +69,18 @@ private:
  * @tparam TIM_HandleTypeDef
  */
 template<>
-class led<TIM_HandleTypeDef> : public ledBase
+class Led<TIM_HandleTypeDef> : public LedBase
 {
 public:
     /**
-     * @brief Construct a new led object
+     * @brief Construct a new Led object
      *
      * @param handle PWM handle
      * @param channel PWM channel
      * @param constructor PWM init function
      * @param destructor PWM deinit function
      */
-    led(
+    Led(
       TIM_HandleTypeDef* handle,
       unsigned int channel,
       std::function<void()> constructor = []() {},
@@ -95,7 +95,7 @@ public:
         range.second = handle->Init.Period;
     };
 
-    virtual ~led() { destructor(); };
+    virtual ~Led() { destructor(); };
 
     void on() override { HAL_TIM_PWM_Start(handle, channel); }
 
