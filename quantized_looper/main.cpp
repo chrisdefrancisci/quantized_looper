@@ -176,28 +176,26 @@ int main()
 
     using millis = std::chrono::duration<uint32_t, std::milli>;
 
-    std::array<TaskControlBlock<millis>, 4> tasks = {
-        TaskControlBlock<millis>(
-          fade_led0,
-          []() -> millis { return millis(HAL_GetTick()); },
-          millis(20),
-          millis(0)),
-        TaskControlBlock<millis>(
-          toggle_led1,
-          []() -> millis { return millis(HAL_GetTick()); },
-          millis(800),
-          millis(0)),
-        TaskControlBlock<millis>(
-          toggle_led2,
-          []() -> millis { return millis(HAL_GetTick()); },
-          millis(600),
-          millis(0)),
-        TaskControlBlock<millis>(
-          task_print_logs,
-          []() -> millis { return millis(HAL_GetTick()); },
-          millis(100),
-          millis(0))
-    };
+    std::array tasks = { TaskControlBlock<millis>(
+                           fade_led0,
+                           []() -> millis { return millis(HAL_GetTick()); },
+                           millis(20),
+                           millis(0)),
+                         TaskControlBlock<millis>(
+                           toggle_led1,
+                           []() -> millis { return millis(HAL_GetTick()); },
+                           millis(800),
+                           millis(0)),
+                         TaskControlBlock<millis>(
+                           toggle_led2,
+                           []() -> millis { return millis(HAL_GetTick()); },
+                           millis(600),
+                           millis(0)),
+                         TaskControlBlock<millis>(
+                           task_print_logs,
+                           []() -> millis { return millis(HAL_GetTick()); },
+                           millis(100),
+                           millis(0)) };
 
     scheduler(tasks);
 }
