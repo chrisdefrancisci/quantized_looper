@@ -5,6 +5,8 @@
  * @date 2025-12-27
  */
 
+#pragma once
+
 // Library includes
 #include <functional>
 #include <utility>
@@ -39,18 +41,6 @@ public:
     void on() override { HAL_GPIO_WritePin(handle, pin, GPIO_PIN_SET); }
 
     void off() override { HAL_GPIO_WritePin(handle, pin, GPIO_PIN_RESET); }
-
-    int test{};
-    void setIntensity(int value) override
-    {
-        if (value != 0) {
-            on();
-        } else {
-            off();
-        }
-    }
-
-    void setIntensity(float value) override { setIntensity(value > 0); }
 
     std::pair<int, int> getRange() const override
     {
@@ -101,18 +91,16 @@ public:
 
     void off() override { HAL_TIM_PWM_Stop(handle, channel); }
 
-    void setIntensity(int value) override
+    void setIntensity(int value)
     {
-        off();
         // Ensure value is within range
         value = value > range.second ? range.second : value;
         value = value < range.first ? range.first : value;
 
         handle->Instance->CCR3 = value;
-        on();
     }
 
-    void setIntensity(float value) override
+    void setIntensity(float value)
     {
         int valueInt = (range.second - range.first) * value - range.first;
         setIntensity(valueInt);

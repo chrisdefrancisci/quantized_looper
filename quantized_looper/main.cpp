@@ -1,3 +1,4 @@
+// Library includes
 #include <array>
 #include <chrono>
 #include <cstdint>
@@ -5,16 +6,19 @@
 #include <memory>
 #include <vector>
 
-#include <reusable_synth/software/task.hpp>
-#include <reusable_synth/utils/logger.hpp>
-
+// STM32 includes
 #include "stm32f767xx.h"
 #include "stm32f7xx_hal.h"
 #include <gpio.h>
 #include <main.h>
-#include <quantized_looper/Hardware/led.hpp>
 #include <tim.h>
 #include <usart.h>
+
+// Custom includes
+#include <quantized_looper/hardware/led.hpp>
+#include <quantized_looper/software/led_tasks.hpp>
+#include <reusable_synth/software/task.hpp>
+#include <reusable_synth/utils/logger.hpp>
 
 extern "C"
 {
@@ -53,63 +57,6 @@ static constexpr uint32_t MAX_CYCLE_TIME = 3000; // Min 20 BPM
 static uint32_t last_update_time = 0;
 
 extern UART_HandleTypeDef huart3;
-
-void fade_led0()
-{
-    static float led_pct = 0.0f;
-    static int direction = 1;
-
-    uint32_t current_time = HAL_GetTick();
-
-    if (last_update_time == 0) {
-        last_update_time = current_time;
-    }
-
-    uint32_t elapsed = current_time - last_update_time;
-    float change = direction * 2.0f * (float)elapsed / (float)cycle_time_ms;
-
-    led_pct += change;
-
-    if (led_pct >= 1.0f) {
-        led_pct = 2.0f - led_pct; // Reflect over 1.0
-        direction = -1;
-    } else if (led_pct < 0.0f) {
-        led_pct = -led_pct; // Reflect over 0
-        direction = 1;
-    }
-
-    auto range = (*g_leds)[0]->getRange();
-    int final_amt = range.first + (int)((range.second - range.first) * led_pct);
-
-    (*g_leds)[0]->setIntensity(final_amt);
-    last_update_time = current_time; // CRITICAL: Update for next call
-}
-
-// Task: Toggle LED 1 and log
-void toggle_led1()
-{
-    static bool led_state = false;
-    if (led_state) {
-        (*g_leds)[1]->off();
-    } else {
-        (*g_leds)[1]->on();
-    }
-    led_state = !led_state;
-    logger->info("LED 1 toggled");
-}
-
-// Task: Toggle LED 2 and log
-void toggle_led2()
-{
-    static bool led_state = false;
-    if (led_state) {
-        (*g_leds)[2]->off();
-    } else {
-        (*g_leds)[2]->on();
-    }
-    led_state = !led_state;
-    logger->info("LED 2 toggled");
-}
 
 void task_print_logs()
 {
@@ -165,29 +112,25 @@ int main()
     MX_TIM3_Init();
     MX_USART3_UART_Init();
 
-    std::vector<std::unique_ptr<LedBase>> leds;
-    leds.push_back(std::make_unique<Led<TIM_HandleTypeDef>>(
-      &htim3, TIM_CHANNEL_3, MX_TIM3_Init, MX_TIM3_DeInit));
-
-    leds.push_back(std::make_unique<Led<GPIO_TypeDef>>(LD2_GPIO_Port, LD2_Pin));
-    leds.push_back(std::make_unique<Led<GPIO_TypeDef>>(LD3_GPIO_Port, LD3_Pin));
-
-    g_leds = &leds;
+    auto led1 = Led<TIM_HandleTypeDef>(
+      &htim3, TIM_CHANNEL_3, MX_TIM3_Init, MX_TIM3_DeInit);
+    auto led2 = Led<GPIO_TypeDef>(LD2_GPIO_Port, LD2_Pin);
+    auto led3 = Led<GPIO_TypeDef>(LD3_GPIO_Port, LD3_Pin);
 
     using millis = std::chrono::duration<uint32_t, std::milli>;
 
     std::array tasks = { TaskControlBlock<millis>(
-                           fade_led0,
+                           FadeLed(&led1, millis(cycle_time_ms)),
                            []() -> millis { return millis(HAL_GetTick()); },
                            millis(20),
                            millis(0)),
                          TaskControlBlock<millis>(
-                           toggle_led1,
+                           ToggleLed(&led2),
                            []() -> millis { return millis(HAL_GetTick()); },
                            millis(800),
                            millis(0)),
                          TaskControlBlock<millis>(
-                           toggle_led2,
+                           ToggleLed(&led3),
                            []() -> millis { return millis(HAL_GetTick()); },
                            millis(600),
                            millis(0)),
