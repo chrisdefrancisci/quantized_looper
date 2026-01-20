@@ -14,10 +14,20 @@
 #include <quantized_looper/hardware/led.hpp>
 #include <reusable_synth/hardware/led.hpp>
 
-class ToggleLed
+class LedToggleAnimation
 {
 public:
-    ToggleLed(LedBase* led);
+    /**
+     * @brief Construct a new Led Toggle Animation object
+     *
+     * @param led
+     */
+    LedToggleAnimation(LedBase* led);
+    
+    /**
+     * @brief Executes the animation.
+     *
+     */
     void operator()();
 
 private:
@@ -25,15 +35,28 @@ private:
     bool state;
 };
 
-class FadeLed
+class LedBreatheAnimation
 {
 public:
-    FadeLed(Led<TIM_HandleTypeDef>* led,
-            std::chrono::duration<uint32_t, std::milli> period);
+    /**
+     * @brief Construct a new Fade Led object
+     *
+     * @todo Define "analog LED interface" which has the set intensity function
+     *
+     * @param led Handle for an LED object
+     * @param period The period of the LED breathing animation
+     */
+    LedBreatheAnimation(Led<TIM_HandleTypeDef>* led,
+                        std::chrono::duration<uint32_t, std::milli> period);
     inline void setPeriod(std::chrono::duration<uint32_t, std::milli> newPeriod)
     {
         period = newPeriod;
     };
+
+    /**
+     * @brief Executes the animation.
+     *
+     */
     void operator()();
 
 private:

@@ -28,6 +28,9 @@
         "editor.defaultFormatter": null,
         "[cpp]": {
             "editor.defaultFormatter": "STMicroelectronics.stm32cube-ide-clangd"
-        }
+        },
+        "todo-tree.filtering.includedWorkspaces": [
+            "[]"
+        ]
     }
 }
