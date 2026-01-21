@@ -1,33 +1,36 @@
 {
-	"folders": [
-		{
-			"path": ".."
-		},
-		{
-			"path": "../../tests"
-		},
-		{
-			"path": "../../extern/reusable_synth/reusable_synth"
-		},
-		{
-			"path": "../../extern/reusable_synth/tests"
-		}
-	],
-	"settings": {
-		"stm32cube-ide-clangd.arguments": [
-			"starm-clangd",
-			"--query-driver=${env:CUBE_BUNDLE_PATH}/st-arm-clang/19.1.6+st.10/bin/starm-clang",
-			"--query-driver=${env:CUBE_BUNDLE_PATH}/st-arm-clang/19.1.6+st.10/bin/starm-clang++"
-		],
-		"stm32cube-ide-clangd.path": "cube",
-		"C_Cpp.clang_format_style": "file:${workspaceFolder:quantized_looper}/.clang-format",
-		// "C_Cpp.clang_format_style": "file:${fileWorkspaceFolder}/../.clang-format",
-		"C_Cpp.intelliSenseEngine": "disabled",
-		"editor.formatOnSave": true,
-		"editor.formatOnType": true,
-		"editor.defaultFormatter": null,
-		"[cpp]": {
-			"editor.defaultFormatter": "STMicroelectronics.stm32cube-ide-clangd"
-		}
-	}
+    "folders": [
+        {
+            "path": ".."
+        },
+        {
+            "path": "../../tests"
+        },
+        {
+            "path": "../../extern/reusable_synth/reusable_synth"
+        },
+        {
+            "path": "../../extern/reusable_synth/tests"
+        }
+    ],
+    "settings": {
+        "stm32cube-ide-clangd.arguments": [
+            "starm-clangd",
+            "--query-driver=${env:CUBE_BUNDLE_PATH}/st-arm-clang/19.1.6+st.10/bin/starm-clang",
+            "--query-driver=${env:CUBE_BUNDLE_PATH}/st-arm-clang/19.1.6+st.10/bin/starm-clang++"
+        ],
+        "stm32cube-ide-clangd.path": "cube",
+        "C_Cpp.clang_format_style": "file:${workspaceFolder:quantized_looper}/.clang-format",
+        // "C_Cpp.clang_format_style": "file:${fileWorkspaceFolder}/../.clang-format",
+        "C_Cpp.intelliSenseEngine": "disabled",
+        "editor.formatOnSave": true,
+        "editor.formatOnType": true,
+        "editor.defaultFormatter": null,
+        "[cpp]": {
+            "editor.defaultFormatter": "STMicroelectronics.stm32cube-ide-clangd"
+        },
+        "todo-tree.filtering.includedWorkspaces": [
+            "[]"
+        ]
+    }
 }

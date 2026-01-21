@@ -68,6 +68,8 @@ endif()
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/../extern/reusable_synth/reusable_synth 
                  ${CMAKE_BINARY_DIR}/extern/reusable_synth)
+add_subdirectory(${CMAKE_SOURCE_DIR}/hardware)
+add_subdirectory(${CMAKE_SOURCE_DIR}/software)
 
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE

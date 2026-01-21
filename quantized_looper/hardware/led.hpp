@@ -5,6 +5,8 @@
  * @date 2025-12-27
  */
 
+#pragma once
+
 // Library includes
 #include <functional>
 #include <utility>
@@ -23,7 +25,7 @@
  * @tparam GPIO_TypeDef
  */
 template<>
-class led<GPIO_TypeDef> : public ledBase
+class Led<GPIO_TypeDef> : public LedBase
 {
 public:
     /**
@@ -32,25 +34,13 @@ public:
      * @param handle GPIO handle
      * @param pin Pin number
      */
-    led(GPIO_TypeDef* handle, unsigned int pin)
+    Led(GPIO_TypeDef* handle, unsigned int pin)
       : handle(handle)
       , pin(pin) {};
 
     void on() override { HAL_GPIO_WritePin(handle, pin, GPIO_PIN_SET); }
 
     void off() override { HAL_GPIO_WritePin(handle, pin, GPIO_PIN_RESET); }
-
-    int test{};
-    void setIntensity(int value) override
-    {
-        if (value != 0) {
-            on();
-        } else {
-            off();
-        }
-    }
-
-    void setIntensity(float value) override { setIntensity(value > 0); }
 
     std::pair<int, int> getRange() const override
     {
@@ -69,18 +59,18 @@ private:
  * @tparam TIM_HandleTypeDef
  */
 template<>
-class led<TIM_HandleTypeDef> : public ledBase
+class Led<TIM_HandleTypeDef> : public LedBase
 {
 public:
     /**
-     * @brief Construct a new led object
+     * @brief Construct a new Led object
      *
      * @param handle PWM handle
      * @param channel PWM channel
      * @param constructor PWM init function
      * @param destructor PWM deinit function
      */
-    led(
+    Led(
       TIM_HandleTypeDef* handle,
       unsigned int channel,
       std::function<void()> constructor = []() {},
@@ -95,24 +85,22 @@ public:
         range.second = handle->Init.Period;
     };
 
-    virtual ~led() { destructor(); };
+    virtual ~Led() { destructor(); };
 
     void on() override { HAL_TIM_PWM_Start(handle, channel); }
 
     void off() override { HAL_TIM_PWM_Stop(handle, channel); }
 
-    void setIntensity(int value) override
+    void setIntensity(int value)
     {
-        off();
         // Ensure value is within range
         value = value > range.second ? range.second : value;
         value = value < range.first ? range.first : value;
 
         handle->Instance->CCR3 = value;
-        on();
     }
 
-    void setIntensity(float value) override
+    void setIntensity(float value)
     {
         int valueInt = (range.second - range.first) * value - range.first;
         setIntensity(valueInt);
