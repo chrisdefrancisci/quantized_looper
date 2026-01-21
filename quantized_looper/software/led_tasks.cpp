@@ -8,6 +8,7 @@
 #include "led_tasks.hpp"
 
 #include <quantized_looper/utils/logger_singleton.hpp>
+#include <sstream>
 
 LedToggleAnimation::LedToggleAnimation(LedBase* led)
   : led(led)
@@ -30,6 +31,7 @@ LedBreatheAnimation::LedBreatheAnimation(
   std::chrono::duration<uint32_t, std::milli> period)
   : led(led)
   , period(period)
+  , nextPeriod(period)
   , led_pct(0)
   , direction(1)
   , last_update_time(0) {};
@@ -52,11 +54,17 @@ void LedBreatheAnimation::operator()()
     if (led_pct >= 1.0f) {
         led_pct = 2.0f - led_pct; // Reflect over 1.0
         direction = -1;
-        LoggerSingleton::get()->info("LED fade direction -1");
+        period = nextPeriod;
+        std::stringstream ss;
+        ss << "LED fade direction -1 with period " << period.count() << " ms";
+        LoggerSingleton::get()->info(ss.str().c_str());
     } else if (led_pct < 0.0f) {
         led_pct = -led_pct; // Reflect over 0
         direction = 1;
-        LoggerSingleton::get()->info("LED Fade direction 1");
+        period = nextPeriod;
+        std::stringstream ss;
+        ss << "LED fade direction +1 with period " << period.count() << " ms";
+        LoggerSingleton::get()->info(ss.str().c_str());
     }
 
     auto range = led->getRange();

@@ -23,7 +23,7 @@ public:
      * @param led
      */
     LedToggleAnimation(LedBase* led);
-    
+
     /**
      * @brief Executes the animation.
      *
@@ -48,9 +48,15 @@ public:
      */
     LedBreatheAnimation(Led<TIM_HandleTypeDef>* led,
                         std::chrono::duration<uint32_t, std::milli> period);
+
+    /**
+     * @brief Set the next period - this will not be updated immediately.
+     * 
+     * @param newPeriod 
+     */
     inline void setPeriod(std::chrono::duration<uint32_t, std::milli> newPeriod)
     {
-        period = newPeriod;
+        nextPeriod = newPeriod;
     };
 
     /**
@@ -62,6 +68,7 @@ public:
 private:
     Led<TIM_HandleTypeDef>* led;
     std::chrono::duration<uint32_t, std::milli> period;
+    std::chrono::duration<uint32_t, std::milli> nextPeriod;
     float led_pct;
     int direction;
     std::chrono::duration<uint32_t, std::milli> last_update_time;

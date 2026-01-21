@@ -105,26 +105,37 @@ int main()
     auto led2Toggle = LedToggleAnimation(&led2);
     auto led3Toggle = LedToggleAnimation(&led3);
 
-    std::array tasks = { TaskControlBlock<millis>(
-                           led1Breathe,
-                           []() -> millis { return millis(HAL_GetTick()); },
-                           millis(20),
-                           millis(0)),
-                         TaskControlBlock<millis>(
-                           led2Toggle,
-                           []() -> millis { return millis(HAL_GetTick()); },
-                           millis(800),
-                           millis(0)),
-                         TaskControlBlock<millis>(
-                           led3Toggle,
-                           []() -> millis { return millis(HAL_GetTick()); },
-                           millis(600),
-                           millis(0)),
-                         TaskControlBlock<millis>(
-                           task_print_logs,
-                           []() -> millis { return millis(HAL_GetTick()); },
-                           millis(100),
-                           millis(0)) };
+    std::array<std::unique_ptr<TaskControlBlockInterface<millis>>, 5> tasks = {
+        std::make_unique<TaskControlBlock<millis, LedBreatheAnimation>>(
+          led1Breathe,
+          []() -> millis { return millis(HAL_GetTick()); },
+          millis(20),
+          millis(0)),
+        std::make_unique<TaskControlBlock<millis, LedToggleAnimation>>(
+          led2Toggle,
+          []() -> millis { return millis(HAL_GetTick()); },
+          millis(800),
+          millis(0)),
+        std::make_unique<TaskControlBlock<millis, LedToggleAnimation>>(
+          led3Toggle,
+          []() -> millis { return millis(HAL_GetTick()); },
+          millis(600),
+          millis(0)),
+        std::make_unique<TaskControlBlock<millis, std::function<void()>>>(
+          std::function<void()>(task_print_logs),
+          []() -> millis { return millis(HAL_GetTick()); },
+          millis(100),
+          millis(0)),
+        std::make_unique<TaskControlBlock<millis, std::function<void()>>>(
+          [&led1Breathe]() {
+              // Lambda sets period based on button interrupt
+              led1Breathe.setPeriod(
+                std::chrono::duration<uint32_t, std::milli>(cycle_time_ms));
+          },
+          []() -> millis { return millis(HAL_GetTick()); },
+          millis(5),
+          millis(1))
+    };
 
     scheduler(tasks);
 }
