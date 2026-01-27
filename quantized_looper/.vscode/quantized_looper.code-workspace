@@ -29,8 +29,13 @@
         "[cpp]": {
             "editor.defaultFormatter": "STMicroelectronics.stm32cube-ide-clangd"
         },
+        "cmake.ctest.testExplorerIntegrationEnabled": false,
+        // TODO: may want to correctly configure ctest in cmake, but for now C++ TestMate makes life easier
         "todo-tree.filtering.includedWorkspaces": [
             "[]"
-        ]
+        ],
+        "todo-tree.general.debug": true,
+        "todo-tree.regex.regexCaseSensitive": false,
+        "todo-tree.regex.regex": "(//|#|<!--|/\\*+|^\\s*\\*)\\s*@?($TAGS)"
     }
 }
