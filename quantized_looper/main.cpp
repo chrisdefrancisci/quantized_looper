@@ -89,7 +89,7 @@ extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 // TODO: write DAC driver and move this in there
 extern TIM_HandleTypeDef htim2;
 extern DAC_HandleTypeDef hdac;
-static constexpr int dacDmaBufSize = 256;
+static constexpr int dacDmaBufSize = 512;
 static constexpr int dacDmaBufHalfSize = dacDmaBufSize / 2;
 static uint32_t outputBuffer[dacDmaBufSize] = { 0 };
 volatile static bool writeFront = true;
@@ -111,16 +111,19 @@ int main()
     MX_GPIO_Init();
     HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0); // Lower priority than system
     HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
-    MX_DAC_Init();
     MX_DMA_Init();
+    MX_DAC_Init();
     MX_TIM2_Init();
     MX_TIM3_Init();
     MX_USART3_UART_Init();
 
     // DAC waveform
-    HAL_DAC_Start_DMA(
+    auto status = HAL_TIM_Base_Start(&htim2);
+    assert_param(status == HAL_OK);
+    status = HAL_DAC_Start_DMA(
       &hdac, DAC_CHANNEL_1, outputBuffer, dacDmaBufSize, DAC_ALIGN_12B_R);
-    HAL_TIM_Base_Start(&htim2);
+
+    assert_param(status == HAL_OK);
     // Task to keep DAC on track
     auto lastWriteFront = false;
     auto rampTable = RampWavetable<uint32_t, 1024, 0, (1 << 12) - 1>();
@@ -150,7 +153,9 @@ int main()
     // Organize tasks in priority list
     std::array<std::unique_ptr<TaskControlBlockInterface<millis>>, 6> tasks = {
         std::make_unique<TaskControlBlock<millis, std::function<void()>>>(
-          writeRamp,
+          std::function<void()>(
+            writeRamp), // TODO: why do we need to explicitly cast lambdas to
+                        // not crash?
           []() -> millis { return millis(HAL_GetTick()); },
           millis(1),
           millis(0)),
