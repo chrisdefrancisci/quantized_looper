@@ -47,8 +47,9 @@ void task_print_logs()
     auto log = logger->remove_log();
     if (log.has_value()) {
         const char* msg = log->pBuffer();
-        HAL_UART_Transmit(&huart3, (uint8_t*)msg, strlen(msg), 100);
-        HAL_UART_Transmit(&huart3, (uint8_t*)"\r\n", 2, 100);
+        // TODO: flush log in non-blocking mode using HAL_UART_Transmit_IT or HAL_UART_Transmit_DMA
+        // HAL_UART_Transmit(&huart3, (uint8_t*)msg, strlen(msg), 100);
+        // HAL_UART_Transmit(&huart3, (uint8_t*)"\r\n", 2, 100);
     }
 }
 
@@ -89,7 +90,7 @@ extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 // TODO: write DAC driver and move this in there
 extern TIM_HandleTypeDef htim2;
 extern DAC_HandleTypeDef hdac;
-static constexpr int dacDmaBufSize = 512;
+static constexpr int dacDmaBufSize = 256;
 static constexpr int dacDmaBufHalfSize = dacDmaBufSize / 2;
 static uint32_t outputBuffer[dacDmaBufSize] = { 0 };
 volatile static bool writeFront = true;
