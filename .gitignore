@@ -1,6 +1,12 @@
-./build
+build/
+build-tests/
 tests/build/
 quantized_looper/build
 ./extern
 tests/.cache/
 quantized_looper/compile_commands.json
+quantized_looper/.settings/bundles.store.json
+quantized_looper/.settings/bundles-lock.store.json
+quantized_looper/.settings/ide.store.json
+.settings
+compile_commands.json

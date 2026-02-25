@@ -13,7 +13,6 @@
 
 // Reusable synth includes
 #include <reusable_synth/hardware/led.hpp>
-// #include "reusable_synth/Hardware/led.hpp"
 
 // Hardware includes
 #include <stm32f7xx_hal_gpio.h>

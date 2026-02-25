@@ -1,0 +1,67 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "default-tests",
+            "hidden": true,
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build-tests/${presetName}",
+            "cacheVariables": {
+                "CMAKE_SUPPRESS_DEVELOPER_WARNINGS": "TRUE"
+            }
+        },
+        {
+            "name": "default",
+            "inherits": "default-tests",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "toolchainFile": "${sourceDir}/quantized_looper/cmake/starm-clang.cmake",
+            "cmakeExecutable": "cube-cmake"
+        },
+        {
+            "name": "Debug",
+            "inherits": "default",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "Release",
+            "inherits": "default",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "Debug-Tests",
+            "inherits": "default-tests",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "Release-Tests",
+            "inherits": "default-tests",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "Debug",
+            "configurePreset": "Debug"
+        },
+        {
+            "name": "Release",
+            "configurePreset": "Release"
+        },
+        {
+            "name": "Debug-Tests",
+            "configurePreset": "Debug-Tests"
+        },
+        {
+            "name": "Release-Tests",
+            "configurePreset": "Release-Tests"
+        }
+    ]
+}
