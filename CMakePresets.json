@@ -2,45 +2,51 @@
     "version": 3,
     "configurePresets": [
         {
-            "name": "default-tests",
+            "name": "default-tests-windows",
             "hidden": true,
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build-tests/${presetName}",
+            "toolchainFile": "${sourceDir}/quantized_looper/cmake/windows.cmake",
+            "cmakeExecutable": "C:/msys64/ucrt64/bin/cmake.exe",
             "cacheVariables": {
                 "CMAKE_SUPPRESS_DEVELOPER_WARNINGS": "TRUE"
             }
         },
         {
-            "name": "default",
-            "inherits": "default-tests",
+            "name": "default-crosscompile",
+            "hidden": true,
+            "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/${presetName}",
             "toolchainFile": "${sourceDir}/quantized_looper/cmake/starm-clang.cmake",
-            "cmakeExecutable": "cube-cmake"
+            "cmakeExecutable": "cube-cmake",
+            "cacheVariables": {
+                "CMAKE_SUPPRESS_DEVELOPER_WARNINGS": "TRUE"
+            }
         },
         {
             "name": "Debug",
-            "inherits": "default",
+            "inherits": "default-crosscompile",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug"
             }
         },
         {
             "name": "Release",
-            "inherits": "default",
+            "inherits": "default-crosscompile",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release"
             }
         },
         {
             "name": "Debug-Tests",
-            "inherits": "default-tests",
+            "inherits": "default-tests-windows",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug"
             }
         },
         {
             "name": "Release-Tests",
-            "inherits": "default-tests",
+            "inherits": "default-tests-windows",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release"
             }

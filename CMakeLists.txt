@@ -97,14 +97,15 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
     ${REUSABLE_SYNTH}
 )
 
-# add_subdirectory(${CMAKE_SOURCE_DIR}/quantized_looper)
-
 target_sources(${CMAKE_PROJECT_NAME}
     PUBLIC
         FILE_SET HEADERS 
         BASE_DIRS 
             ${CMAKE_CURRENT_SOURCE_DIR}
 )
+
+add_subdirectory(${CMAKE_SOURCE_DIR}/quantized_looper)
+
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths

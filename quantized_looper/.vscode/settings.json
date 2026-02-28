@@ -16,5 +16,8 @@
     "C_Cpp.clang_format_style": "file:${workspaceFolder:quantized_looper}/.clang-format",
     // "C_Cpp.clang_format_style": "file:${fileWorkspaceFolder}/../.clang-format",
     "editor.formatOnType": true,
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "cmake.environment": {
+        "PATH": "c:/Users/ChrisDeFrancisci/.vscode/extensions/stmicroelectronics.stm32cube-ide-build-cmake-1.43.0/resources/cube-cmake/win32;c:\\Users\\ChrisDeFrancisci\\.vscode\\extensions\\stmicroelectronics.stm32cube-ide-core-1.1.0\\resources\\binaries\\win32\\x86_64;${env.PATH}"
+    }
 }

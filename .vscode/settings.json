@@ -1,0 +1,15 @@
+// {
+//     "cmake.cmakePath": "C:/msys64/ucrt64/bin/cmake",
+//     "C_Cpp.default.compilerPath": "C:/msys64/ucrt64/bin/",
+// }
+// {
+//     "cmake.cmakePath": "C:/msys64/ucrt64/bin/cmake",
+//     "C_Cpp.default.compilerPath": "C:/msys64/ucrt64/bin/",
+// }
+// {
+//     "cmake.cmakePath": "cube-cmake",
+//     "C_Cpp.default.compilerPath": "C:/msys64/ucrt64/bin/",
+//     "cmake.configureArgs": [
+//         "-DCMAKE_COMMAND=cube-cmake"
+//     ],
+// }
