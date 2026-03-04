@@ -1,4 +1,5 @@
 // Library includes
+#include <algorithm>
 #include <array>
 #include <chrono>
 #include <cstdint>
@@ -22,6 +23,8 @@
 #include <quantized_looper/hardware/led.hpp>
 #include <quantized_looper/software/led_tasks.hpp>
 #include <quantized_looper/utils/logger_singleton.hpp>
+#include <reusable_synth/hardware/pin_change.hpp>
+#include <reusable_synth/middleware/debounced_button.hpp>
 #include <reusable_synth/software/task.hpp>
 #include <reusable_synth/software/wavetable_osc.hpp>
 
@@ -34,8 +37,6 @@ extern "C"
 auto logger = LoggerSingleton::get();
 
 // Tap tempo globals
-static volatile uint32_t last_tap_time = 0;
-static volatile uint32_t cycle_time_ms = 1000; // Default 60 BPM (1 second)
 static constexpr uint32_t MIN_CYCLE_TIME = 60;
 static constexpr uint32_t MAX_CYCLE_TIME = 3000; // Min 20 BPM
 
@@ -47,44 +48,59 @@ void task_print_logs()
     auto log = logger->remove_log();
     if (log.has_value()) {
         const char* msg = log->pBuffer();
-        // TODO: flush log in non-blocking mode using HAL_UART_Transmit_IT or HAL_UART_Transmit_DMA
-        // HAL_UART_Transmit(&huart3, (uint8_t*)msg, strlen(msg), 100);
-        // HAL_UART_Transmit(&huart3, (uint8_t*)"\r\n", 2, 100);
+        // TODO: flush log in non-blocking mode using HAL_UART_Transmit_IT or
+        (void)msg;
+        // HAL_UART_Transmit_DMA HAL_UART_Transmit(&huart3, (uint8_t*)msg,
+        // strlen(msg), 100); HAL_UART_Transmit(&huart3, (uint8_t*)"\r\n", 2,
+        // 100);
     }
 }
 
+// TODO: move button code to its own file
 // TODO: Creation of this can be automated with cubemx
 extern "C" void EXTI15_10_IRQHandler(void)
 {
     HAL_GPIO_EXTI_IRQHandler(USER_Btn_Pin);
 }
 
-// TODO: want external interface for buttons,
+static std::array<PinChange::RegisteredPin, 1> registeredPins;
+static std::chrono::duration<uint32_t, std::milli> debounceTime(MIN_CYCLE_TIME);
+static DebouncedButtonEdge<std::chrono::duration<uint32_t, std::milli>>
+  tempoButton(
+    registeredPins,
+    USER_Btn_Pin,
+    []() -> std::chrono::duration<uint32_t, std::milli> {
+        return std::chrono::duration<uint32_t, std::milli>(HAL_GetTick());
+    },
+    debounceTime);
+
+// TODO: move button timing to its own file
+template<typename TickType>
+class ButtonTime
+{
+public:
+    ButtonTime(TickType (*getTime)())
+      : getTime(getTime)
+    {
+    }
+
+    void irq()
+    {
+        TickType time = getTime();
+        last_diff = time - last_time;
+        last_time = time;
+    }
+    TickType getDiff() { return last_diff; }
+
+private:
+    TickType (*getTime)();
+    volatile TickType last_time;
+    volatile TickType last_diff;
+};
+
 extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-    if (GPIO_Pin == USER_Btn_Pin) {
-        uint32_t current_time = HAL_GetTick();
-
-        // Debounce: ignore presses within 200ms of last press
-        static uint32_t last_press_time = 0;
-        if (current_time - last_press_time < 50) {
-            return; // Too soon, ignore
-        }
-
-        last_press_time = current_time;
-
-        if (last_tap_time > 0) {
-            uint32_t time_diff = current_time - last_tap_time;
-
-            // Clamp to reasonable BPM range
-            if (time_diff >= MIN_CYCLE_TIME && time_diff <= MAX_CYCLE_TIME) {
-                cycle_time_ms = time_diff;
-                logger->info("BPM updated");
-            }
-        }
-
-        last_tap_time = current_time;
-    }
+    PinChange::irq_dispatch(registeredPins, GPIO_Pin);
 }
 
 // TODO: write DAC driver and move this in there
@@ -118,6 +134,10 @@ int main()
     MX_TIM3_Init();
     MX_USART3_UART_Init();
 
+    // Button press TODO move to its own file
+    ButtonTime buttonTime(HAL_GetTick);
+    tempoButton.registerEdgeCallback([&buttonTime]() { buttonTime.irq(); });
+
     // DAC waveform
     auto status = HAL_TIM_Base_Start(&htim2);
     assert_param(status == HAL_OK);
@@ -147,7 +167,7 @@ int main()
 
     // Create LED tasks
     using millis = std::chrono::duration<uint32_t, std::milli>;
-    auto led1Breathe = LedBreatheAnimation(&led1, millis(cycle_time_ms));
+    auto led1Breathe = LedBreatheAnimation(&led1, millis(1000));
     auto led2Toggle = LedToggleAnimation(&led2);
     auto led3Toggle = LedToggleAnimation(&led3);
 
@@ -181,10 +201,14 @@ int main()
           millis(100),
           millis(0)),
         std::make_unique<TaskControlBlock<millis, std::function<void()>>>(
-          [&led1Breathe]() {
+          [&led1Breathe, &buttonTime]() {
               // Lambda sets period based on button interrupt
-              led1Breathe.setPeriod(
-                std::chrono::duration<uint32_t, std::milli>(cycle_time_ms));
+              if (buttonTime.getDiff() > MIN_CYCLE_TIME &&
+                  buttonTime.getDiff() < MAX_CYCLE_TIME) {
+                  led1Breathe.setPeriod(
+                    std::chrono::duration<uint32_t, std::milli>(
+                      buttonTime.getDiff()));
+              }
           },
           []() -> millis { return millis(HAL_GetTick()); },
           millis(5),
