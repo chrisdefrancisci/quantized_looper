@@ -37,7 +37,7 @@ extern "C"
 auto logger = LoggerSingleton::get();
 
 // Tap tempo globals
-static constexpr uint32_t MIN_CYCLE_TIME = 60;
+static constexpr uint32_t MIN_CYCLE_TIME = 250;  // Max of 240 BPM
 static constexpr uint32_t MAX_CYCLE_TIME = 3000; // Min 20 BPM
 
 // TODO: move task
