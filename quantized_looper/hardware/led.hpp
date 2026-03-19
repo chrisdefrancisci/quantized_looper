@@ -41,6 +41,26 @@ public:
 
     void off() override { HAL_GPIO_WritePin(handle, pin, GPIO_PIN_RESET); }
 
+    void setIntensity(int value) override { 
+        if(value) {
+            HAL_GPIO_WritePin(handle, pin, GPIO_PIN_SET);
+        }
+        else
+        {
+            HAL_GPIO_WritePin(handle, pin, GPIO_PIN_RESET);
+        }
+    }
+
+    void setIntensity(float value) override { 
+        if(value > 0.0f) {
+            HAL_GPIO_WritePin(handle, pin, GPIO_PIN_SET);
+        }
+        else
+        {
+            HAL_GPIO_WritePin(handle, pin, GPIO_PIN_RESET);
+        }
+    }
+
     std::pair<int, int> getRange() const override
     {
         return std::pair<int, int>(0, 1);
@@ -90,7 +110,7 @@ public:
 
     void off() override { HAL_TIM_PWM_Stop(handle, channel); }
 
-    void setIntensity(int value)
+    void setIntensity(int value) override
     {
         // Ensure value is within range
         value = value > range.second ? range.second : value;
@@ -99,7 +119,7 @@ public:
         handle->Instance->CCR3 = value;
     }
 
-    void setIntensity(float value)
+    void setIntensity(float value) override
     {
         int valueInt = (range.second - range.first) * value - range.first;
         setIntensity(valueInt);

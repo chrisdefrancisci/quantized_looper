@@ -82,6 +82,10 @@ extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     }
 }
 
+using millis = std::chrono::duration<uint32_t, std::milli>;
+
+static millis getTick() { return millis(HAL_GetTick()); }
+
 int main()
 {
     HAL_Init();
@@ -101,7 +105,7 @@ int main()
 
     using millis = std::chrono::duration<uint32_t, std::milli>;
 
-    auto led1Breathe = LedBreatheAnimation(&led1, millis(cycle_time_ms));
+    auto led1Breathe = LedBreatheAnimation(&led1, getTick, millis(cycle_time_ms));
     auto led2Toggle = LedToggleAnimation(&led2);
     auto led3Toggle = LedToggleAnimation(&led3);
 

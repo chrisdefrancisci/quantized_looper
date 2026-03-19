@@ -27,9 +27,11 @@ void LedToggleAnimation::operator()()
 }
 
 LedBreatheAnimation::LedBreatheAnimation(
-  Led<TIM_HandleTypeDef>* led,
+  LedBase* led,
+  std::chrono::duration<uint32_t, std::milli> (*getTick)(),
   std::chrono::duration<uint32_t, std::milli> period)
   : led(led)
+  , getTick(getTick)
   , period(period)
   , nextPeriod(period)
   , led_pct(0)
@@ -38,8 +40,7 @@ LedBreatheAnimation::LedBreatheAnimation(
 
 void LedBreatheAnimation::operator()()
 {
-    auto current_time =
-      std::chrono::duration<uint32_t, std::milli>(HAL_GetTick());
+    auto current_time = getTick();
 
     if (last_update_time == std::chrono::duration<uint32_t, std::milli>(0)) {
         last_update_time = current_time;
@@ -68,6 +69,8 @@ void LedBreatheAnimation::operator()()
     }
 
     auto range = led->getRange();
+    // TODO: replaces this with the led->setIntensity(float)
+    //  And then remove the setIntensity(int) from the interface
     int final_amt = range.first + (int)((range.second - range.first) * led_pct);
 
     led->setIntensity(final_amt);

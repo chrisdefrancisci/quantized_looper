@@ -8,10 +8,9 @@
 
 #pragma once
 
-#include "stm32f767xx.h"
-#include "stm32f7xx_hal.h"
+#include <chrono>
+#include <cstdint>
 
-#include <quantized_looper/hardware/led.hpp>
 #include <reusable_synth/hardware/led.hpp>
 
 class LedToggleAnimation
@@ -46,7 +45,8 @@ public:
      * @param led Handle for an LED object
      * @param period The period of the LED breathing animation
      */
-    LedBreatheAnimation(Led<TIM_HandleTypeDef>* led,
+    LedBreatheAnimation(LedBase* led,
+                        std::chrono::duration<uint32_t, std::milli> (*getTick)(),
                         std::chrono::duration<uint32_t, std::milli> period);
 
     /**
@@ -66,7 +66,8 @@ public:
     void operator()();
 
 private:
-    Led<TIM_HandleTypeDef>* led;
+    LedBase* led;
+    std::chrono::duration<uint32_t, std::milli> (*getTick)();
     std::chrono::duration<uint32_t, std::milli> period;
     std::chrono::duration<uint32_t, std::milli> nextPeriod;
     float led_pct;
