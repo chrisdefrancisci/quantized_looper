@@ -1,4 +1,9 @@
-// {
+{
+    "cmake.environment": {
+        "CC": "/usr/bin/clang",
+        "CXX": "/usr/bin/clang++"
+    }
+} // {
 //     "cmake.cmakePath": "C:/msys64/ucrt64/bin/cmake",
 //     "C_Cpp.default.compilerPath": "C:/msys64/ucrt64/bin/",
 // }

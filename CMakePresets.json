@@ -6,8 +6,6 @@
             "hidden": true,
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build-tests/${presetName}",
-            "toolchainFile": "${sourceDir}/quantized_looper/cmake/windows.cmake",
-            "cmakeExecutable": "C:/msys64/ucrt64/bin/cmake.exe",
             "cacheVariables": {
                 "CMAKE_SUPPRESS_DEVELOPER_WARNINGS": "TRUE"
             }

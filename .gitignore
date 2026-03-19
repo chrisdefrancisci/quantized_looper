@@ -2,7 +2,6 @@ build
 build-tests
 .cache
 compile_commands.json
-extern
 .settings
 quantized_looper/build
 quantized_looper/compile_commands.json

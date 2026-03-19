@@ -89,12 +89,13 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined library search paths
 )
 
-find_library(REUSABLE_SYNTH ReusableSynthInterface HINTS extern/reusable_synth/build/Debug)
+add_subdirectory(extern/reusable_synth)
+# find_library(REUSABLE_SYNTH ReusableSynthInterface HINTS extern/reusable_synth/build/Debug)
 
 # Add linked libraries
 target_link_libraries(${CMAKE_PROJECT_NAME}
     # Add user defined libraries
-    ${REUSABLE_SYNTH}
+    ReusableSynthInterface
 )
 
 target_sources(${CMAKE_PROJECT_NAME}
