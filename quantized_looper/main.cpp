@@ -23,6 +23,8 @@
 #include <quantized_looper/hardware/led.hpp>
 #include <quantized_looper/software/led_tasks.hpp>
 #include <quantized_looper/utils/logger_singleton.hpp>
+#include <reusable_synth/hardware/dac.hpp>
+#include <reusable_synth/hardware/interrupt_handler.hpp>
 #include <reusable_synth/hardware/pin_change.hpp>
 #include <reusable_synth/middleware/debounced_button.hpp>
 #include <reusable_synth/software/task.hpp>
@@ -109,14 +111,14 @@ extern DAC_HandleTypeDef hdac;
 static constexpr int dacDmaBufSize = 256;
 static constexpr int dacDmaBufHalfSize = dacDmaBufSize / 2;
 static uint32_t outputBuffer[dacDmaBufSize] = { 0 };
-volatile static bool writeFront = true;
+static InterruptHandler halfCompleteCallback, completeCallback;
 extern "C" void HAL_DAC_ConvHalfCpltCallbackCh1(DAC_HandleTypeDef* hdac)
 {
-    writeFront = true;
+    halfCompleteCallback();
 }
 extern "C" void HAL_DAC_ConvCpltCallbackCh1(DAC_HandleTypeDef* hdac)
 {
-    writeFront = false;
+    completeCallback();
 }
 
 int main()
@@ -146,17 +148,22 @@ int main()
 
     assert_param(status == HAL_OK);
     // Task to keep DAC on track
-    auto lastWriteFront = false;
     auto rampTable = RampWavetable<uint32_t, 1024, 0, (1 << 12) - 1>();
     WavetableOsc<uint32_t> osc(rampTable.data);
     osc.setFrequency(100, 96000);
-    auto writeRamp = [&lastWriteFront, &osc]() {
-        if (lastWriteFront != writeFront) {
-            lastWriteFront = writeFront;
-            auto ptr =
-              writeFront ? outputBuffer : outputBuffer + dacDmaBufHalfSize;
-            osc.increment(std::span(ptr, dacDmaBufHalfSize));
-        }
+    std::array<uint32_t, dacDmaBufHalfSize> inputBuffer;
+    Dac dac(
+      std::span(inputBuffer),
+      std::span(outputBuffer),
+      +[](uint32_t& y, const uint32_t& x) -> void { y = x; });
+    halfCompleteCallback.connect<
+      &Dac<uint32_t, uint32_t, dacDmaBufHalfSize>::setHalfCompleteFlag>(&dac);
+    completeCallback
+      .connect<&Dac<uint32_t, uint32_t, dacDmaBufHalfSize>::setCompleteFlag>(
+        &dac);
+    auto writeRamp = [&osc, &inputBuffer, &dac]() -> void {
+        osc.increment(inputBuffer);
+        dac.execute();
     };
 
     // Create LED handlers
@@ -172,11 +179,11 @@ int main()
     auto led3Toggle = LedToggleAnimation(&led3);
 
     // Organize tasks in priority list
+    // TODO: why do we need to explicitly cast lambdas to
+    // not crash?
     std::array<std::unique_ptr<TaskControlBlockInterface<millis>>, 6> tasks = {
-        std::make_unique<TaskControlBlock<millis, std::function<void()>>>(
-          std::function<void()>(
-            writeRamp), // TODO: why do we need to explicitly cast lambdas to
-                        // not crash?
+        std::make_unique<TaskControlBlock<millis, decltype(writeRamp)>>(
+          writeRamp,
           []() -> millis { return millis(HAL_GetTick()); },
           millis(1),
           millis(0)),
@@ -201,7 +208,7 @@ int main()
           millis(100),
           millis(0)),
         std::make_unique<TaskControlBlock<millis, std::function<void()>>>(
-          [&led1Breathe, &buttonTime]() {
+          [&led1Breathe, &buttonTime]() -> void {
               // Lambda sets period based on button interrupt
               if (buttonTime.getDiff() > MIN_CYCLE_TIME &&
                   buttonTime.getDiff() < MAX_CYCLE_TIME) {
