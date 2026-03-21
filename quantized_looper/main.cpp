@@ -108,7 +108,7 @@ extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 // TODO: write DAC driver and move this in there
 extern TIM_HandleTypeDef htim2;
 extern DAC_HandleTypeDef hdac;
-static constexpr int dacDmaBufSize = 256;
+static constexpr int dacDmaBufSize = 512;
 static constexpr int dacDmaBufHalfSize = dacDmaBufSize / 2;
 static uint32_t outputBuffer[dacDmaBufSize] = { 0 };
 static InterruptHandler halfCompleteCallback, completeCallback;
@@ -148,21 +148,23 @@ int main()
 
     assert_param(status == HAL_OK);
     // Task to keep DAC on track
-    auto rampTable = RampWavetable<uint32_t, 1024, 0, (1 << 12) - 1>();
-    WavetableOsc<uint32_t> osc(rampTable.data);
+    // auto rampTable = RampWavetable<uint32_t, 1024, 0, (1 << 12) - 1>();
+    auto rampTable = RampWavetable<float, 1024, 0, 1>();
+    WavetableOsc<float> osc(rampTable.data);
     osc.setFrequency(100, 96000);
-    std::array<uint32_t, dacDmaBufHalfSize> inputBuffer;
+    std::array<float, dacDmaBufHalfSize> inputBuffer;
     Dac dac(
       std::span(inputBuffer),
       std::span(outputBuffer),
-      +[](uint32_t& y, const uint32_t& x) -> void { y = x; });
-    halfCompleteCallback.connect<
-      &Dac<uint32_t, uint32_t, dacDmaBufHalfSize>::setHalfCompleteFlag>(&dac);
-    completeCallback
-      .connect<&Dac<uint32_t, uint32_t, dacDmaBufHalfSize>::setCompleteFlag>(
-        &dac);
+      +[](uint32_t& y, const float& x) -> void {
+          y = std::min(x * 4096, 4095.0f);
+      });
+    halfCompleteCallback.connect<&decltype(dac)::setHalfCompleteFlag>(&dac);
+    completeCallback.connect<&decltype(dac)::setCompleteFlag>(&dac);
     auto writeRamp = [&osc, &inputBuffer, &dac]() -> void {
-        osc.increment(inputBuffer);
+        if (dac.isReady()) {
+            osc.increment(inputBuffer);
+        }
         dac.execute();
     };
 
