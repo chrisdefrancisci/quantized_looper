@@ -149,16 +149,14 @@ int main()
     assert_param(status == HAL_OK);
     // Task to keep DAC on track
     // auto rampTable = RampWavetable<uint32_t, 1024, 0, (1 << 12) - 1>();
-    auto rampTable = RampWavetable<float, 1024, 0, 1>();
-    WavetableOsc<float> osc(rampTable.data);
+    auto waveform = SineWavetable<uint32_t, 1024, 100, 2148>();
+    WavetableOsc osc(waveform.data);
     osc.setFrequency(100, 96000);
-    std::array<float, dacDmaBufHalfSize> inputBuffer;
+    std::array<uint32_t, dacDmaBufHalfSize> inputBuffer;
     Dac dac(
       std::span(inputBuffer),
       std::span(outputBuffer),
-      +[](uint32_t& y, const float& x) -> void {
-          y = std::min(x * 4096, 4095.0f);
-      });
+      +[](uint32_t& y, const uint32_t& x) -> void { y = x; });
     halfCompleteCallback.connect<&decltype(dac)::setHalfCompleteFlag>(&dac);
     completeCallback.connect<&decltype(dac)::setCompleteFlag>(&dac);
     auto writeRamp = [&osc, &inputBuffer, &dac]() -> void {
