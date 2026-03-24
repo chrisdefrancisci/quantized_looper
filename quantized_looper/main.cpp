@@ -151,7 +151,7 @@ int main()
     // auto rampTable = RampWavetable<uint32_t, 1024, 0, (1 << 12) - 1>();
     auto waveform = SineWavetable<uint32_t, 1024, 100, 2148>();
     WavetableOsc osc(waveform.data);
-    osc.setFrequency(100, 96000);
+    osc.setFrequency(10000, 96000);
     std::array<uint32_t, dacDmaBufHalfSize> inputBuffer;
     Dac dac(
       std::span(inputBuffer),
@@ -159,7 +159,7 @@ int main()
       +[](uint32_t& y, const uint32_t& x) -> void { y = x; });
     halfCompleteCallback.connect<&decltype(dac)::setHalfCompleteFlag>(&dac);
     completeCallback.connect<&decltype(dac)::setCompleteFlag>(&dac);
-    auto writeRamp = [&osc, &inputBuffer, &dac]() -> void {
+    auto writeWaveform = [&osc, &inputBuffer, &dac]() -> void {
         if (dac.isReady()) {
             osc.increment(inputBuffer);
         }
@@ -178,12 +178,21 @@ int main()
     auto led2Toggle = LedToggleAnimation(&led2);
     auto led3Toggle = LedToggleAnimation(&led3);
 
+    auto buttonToLed = [&led1Breathe, &buttonTime]() -> void {
+        // Lambda sets period based on button interrupt
+        if (buttonTime.getDiff() > MIN_CYCLE_TIME &&
+            buttonTime.getDiff() < MAX_CYCLE_TIME) {
+            led1Breathe.setPeriod(std::chrono::duration<uint32_t, std::milli>(
+              buttonTime.getDiff()));
+        }
+    };
+
     // Organize tasks in priority list
     // TODO: why do we need to explicitly cast lambdas to
     // not crash?
     std::array<std::unique_ptr<TaskControlBlockInterface<millis>>, 6> tasks = {
-        std::make_unique<TaskControlBlock<millis, decltype(writeRamp)>>(
-          writeRamp,
+        std::make_unique<TaskControlBlock<millis, decltype(writeWaveform)>>(
+          writeWaveform,
           []() -> millis { return millis(HAL_GetTick()); },
           millis(1),
           millis(0)),
@@ -202,21 +211,13 @@ int main()
           []() -> millis { return millis(HAL_GetTick()); },
           millis(600),
           millis(0)),
-        std::make_unique<TaskControlBlock<millis, std::function<void()>>>(
-          std::function<void()>(task_print_logs),
+        std::make_unique<TaskControlBlock<millis, void (*)()>>(
+          task_print_logs,
           []() -> millis { return millis(HAL_GetTick()); },
           millis(100),
           millis(0)),
-        std::make_unique<TaskControlBlock<millis, std::function<void()>>>(
-          [&led1Breathe, &buttonTime]() -> void {
-              // Lambda sets period based on button interrupt
-              if (buttonTime.getDiff() > MIN_CYCLE_TIME &&
-                  buttonTime.getDiff() < MAX_CYCLE_TIME) {
-                  led1Breathe.setPeriod(
-                    std::chrono::duration<uint32_t, std::milli>(
-                      buttonTime.getDiff()));
-              }
-          },
+        std::make_unique<TaskControlBlock<millis, decltype(buttonToLed)>>(
+          buttonToLed,
           []() -> millis { return millis(HAL_GetTick()); },
           millis(5),
           millis(1))
