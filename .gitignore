@@ -10,3 +10,5 @@ quantized_looper/.settings/bundles-lock.store.json
 quantized_looper/.settings/ide.store.json
 tests/build/
 tests/.cache/
+.vscode/c_cpp_properties.json
+.vscode/settings.json

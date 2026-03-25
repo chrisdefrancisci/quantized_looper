@@ -89,13 +89,16 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined library search paths
 )
 
-add_subdirectory(extern/reusable_synth)
-# find_library(REUSABLE_SYNTH ReusableSynthInterface HINTS extern/reusable_synth/build/Debug)
+# TODO can we find a Release version if we are compiling Release?
+find_library(REUSABLE_SYNTH 
+    NAMES ReusableSynthInterface 
+    HINTS extern/reusable_synth/build/Debug
+)
 
 # Add linked libraries
 target_link_libraries(${CMAKE_PROJECT_NAME}
     # Add user defined libraries
-    ReusableSynthInterface
+    ${REUSABLE_SYNTH}
 )
 
 target_sources(${CMAKE_PROJECT_NAME}
