@@ -41,29 +41,27 @@ public:
 
     void off() override { HAL_GPIO_WritePin(handle, pin, GPIO_PIN_RESET); }
 
-    void setIntensity(int value) override { 
-        if(value) {
-            HAL_GPIO_WritePin(handle, pin, GPIO_PIN_SET);
-        }
-        else
-        {
-            HAL_GPIO_WritePin(handle, pin, GPIO_PIN_RESET);
-        }
-    }
-
-    void setIntensity(float value) override { 
-        if(value > 0.0f) {
-            HAL_GPIO_WritePin(handle, pin, GPIO_PIN_SET);
-        }
-        else
-        {
-            HAL_GPIO_WritePin(handle, pin, GPIO_PIN_RESET);
-        }
-    }
-
-    std::pair<int, int> getRange() const override
+    void setIntensity(int value) override
     {
-        return std::pair<int, int>(0, 1);
+        if (value != 0) {
+            HAL_GPIO_WritePin(handle, pin, GPIO_PIN_SET);
+        } else {
+            HAL_GPIO_WritePin(handle, pin, GPIO_PIN_RESET);
+        }
+    }
+
+    void setIntensity(float value) override
+    {
+        if (value > 0.0F) {
+            HAL_GPIO_WritePin(handle, pin, GPIO_PIN_SET);
+        } else {
+            HAL_GPIO_WritePin(handle, pin, GPIO_PIN_RESET);
+        }
+    }
+
+    [[nodiscard]] auto getRange() const -> std::pair<int, int> override
+    {
+        return { 0, 1 };
     }
 
 private:
@@ -92,19 +90,19 @@ public:
     Led(
       TIM_HandleTypeDef* handle,
       unsigned int channel,
-      std::function<void()> constructor = []() {},
-      std::function<void()> destructor = []() {})
+      std::function<void()> constructor = []() -> void {},
+      std::function<void()> destructor = []() -> void {})
       : handle(handle)
       , channel(channel)
       , constructor(constructor)
-      , destructor(destructor)
+      , destructor(std::move(destructor))
     {
         constructor();
         range.first = 0;
-        range.second = handle->Init.Period;
+        range.second = (int)handle->Init.Period;
     };
 
-    virtual ~Led() { destructor(); };
+    ~Led() override { destructor(); };
 
     void on() override { HAL_TIM_PWM_Start(handle, channel); }
 
@@ -121,11 +119,15 @@ public:
 
     void setIntensity(float value) override
     {
-        int valueInt = (range.second - range.first) * value - range.first;
+        int valueInt =
+          int(float(range.second - range.first) * value) - range.first;
         setIntensity(valueInt);
     }
 
-    std::pair<int, int> getRange() const override { return range; }
+    [[nodiscard]] auto getRange() const -> std::pair<int, int> override
+    {
+        return range;
+    }
 
 private:
     TIM_HandleTypeDef* handle;

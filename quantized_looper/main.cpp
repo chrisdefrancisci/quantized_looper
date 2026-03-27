@@ -45,7 +45,7 @@ static constexpr uint32_t MAX_CYCLE_TIME = 3000; // Min 20 BPM
 
 // TODO: move task
 // TODO: writer interface not tied to UART
-extern UART_HandleTypeDef huart3;
+
 void task_print_logs()
 {
     auto log = logger->remove_log();
@@ -93,7 +93,7 @@ public:
         last_diff = time - last_time;
         last_time = time;
     }
-    TickType getDiff() { return last_diff; }
+    auto getDiff() -> TickType { return last_diff; }
 
 private:
     TickType (*getTime)();
@@ -107,11 +107,10 @@ extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 }
 
 // TODO: write DAC driver and move this in there
-extern TIM_HandleTypeDef htim2;
-extern DAC_HandleTypeDef hdac;
+
 static constexpr int dacDmaBufSize = 512;
 static constexpr int dacDmaBufHalfSize = dacDmaBufSize / 2;
-static uint32_t outputBuffer[dacDmaBufSize] = { 0 };
+static std::array<uint32_t, dacDmaBufSize> outputBuffer = { 0 };
 static InterruptHandler halfCompleteCallback, completeCallback;
 extern "C" void HAL_DAC_ConvHalfCpltCallbackCh1(DAC_HandleTypeDef* hdac)
 {
@@ -124,12 +123,12 @@ extern "C" void HAL_DAC_ConvCpltCallbackCh1(DAC_HandleTypeDef* hdac)
 
 using millis = std::chrono::duration<uint32_t, std::milli>;
 
-static millis getTick()
+static auto getTick() -> millis
 {
     return millis(HAL_GetTick());
 }
 
-int main()
+auto main() -> int
 {
     HAL_Init();
 
@@ -146,13 +145,17 @@ int main()
 
     // Button press TODO move to its own file
     ButtonTime buttonTime(HAL_GetTick);
-    tempoButton.registerEdgeCallback([&buttonTime]() { buttonTime.irq(); });
+    tempoButton.registerEdgeCallback(
+      [&buttonTime]() -> void { buttonTime.irq(); });
 
     // DAC waveform
     auto status = HAL_TIM_Base_Start(&htim2);
     assert_param(status == HAL_OK);
-    status = HAL_DAC_Start_DMA(
-      &hdac, DAC_CHANNEL_1, outputBuffer, dacDmaBufSize, DAC_ALIGN_12B_R);
+    status = HAL_DAC_Start_DMA(&hdac,
+                               DAC_CHANNEL_1,
+                               outputBuffer.data(),
+                               dacDmaBufSize,
+                               DAC_ALIGN_12B_R);
 
     assert_param(status == HAL_OK);
     // Task to keep DAC on track
@@ -160,7 +163,7 @@ int main()
     auto waveform = SineWavetable<uint32_t, 1024, 100, 2148>();
     WavetableOsc osc(waveform.data);
     osc.setFrequency(10000, 96000);
-    std::array<uint32_t, dacDmaBufHalfSize> inputBuffer;
+    std::array<uint32_t, dacDmaBufHalfSize> inputBuffer{};
     Dac dac(
       std::span(inputBuffer),
       std::span(outputBuffer),

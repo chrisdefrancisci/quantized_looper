@@ -45,16 +45,17 @@ public:
      * @param led Handle for an LED object
      * @param period The period of the LED breathing animation
      */
-    LedBreatheAnimation(LedBase* led,
-                        std::chrono::duration<uint32_t, std::milli> (*getTick)(),
-                        std::chrono::duration<uint32_t, std::milli> period);
+    LedBreatheAnimation(
+      LedBase* led,
+      std::chrono::duration<uint32_t, std::milli> (*getTick)(),
+      std::chrono::duration<uint32_t, std::milli> period);
 
     /**
      * @brief Set the next period - this will not be updated immediately.
-     * 
-     * @param newPeriod 
+     *
+     * @param newPeriod
      */
-    inline void setPeriod(std::chrono::duration<uint32_t, std::milli> newPeriod)
+    void setPeriod(std::chrono::duration<uint32_t, std::milli> newPeriod)
     {
         nextPeriod = newPeriod;
     };
@@ -71,6 +72,6 @@ private:
     std::chrono::duration<uint32_t, std::milli> period;
     std::chrono::duration<uint32_t, std::milli> nextPeriod;
     float led_pct;
-    int direction;
+    float direction;
     std::chrono::duration<uint32_t, std::milli> last_update_time;
 };

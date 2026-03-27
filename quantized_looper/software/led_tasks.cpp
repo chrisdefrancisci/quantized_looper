@@ -48,24 +48,26 @@ void LedBreatheAnimation::operator()()
 
     auto elapsed = current_time - last_update_time;
     float change =
-      direction * 2.0f * (float)elapsed.count() / (float)period.count();
+      direction * 2.0F * (float)elapsed.count() / (float)period.count();
 
     led_pct += change;
 
-    if (led_pct >= 1.0f) {
-        led_pct = 2.0f - led_pct; // Reflect over 1.0
-        direction = -1;
+    if (led_pct >= 1.0F) {
+        led_pct = 2.0F - led_pct; // Reflect over 1.0
+        direction = -1.0F;
         period = nextPeriod;
-        std::stringstream ss;
-        ss << "LED fade direction -1 with period " << period.count() << " ms";
-        LoggerSingleton::get()->info(ss.str().c_str());
-    } else if (led_pct < 0.0f) {
+        std::stringstream stream;
+        stream << "LED fade direction -1 with period " << period.count()
+               << " ms";
+        LoggerSingleton::get()->info(stream.str());
+    } else if (led_pct < 0.0F) {
         led_pct = -led_pct; // Reflect over 0
-        direction = 1;
+        direction = 1.0F;
         period = nextPeriod;
-        std::stringstream ss;
-        ss << "LED fade direction +1 with period " << period.count() << " ms";
-        LoggerSingleton::get()->info(ss.str().c_str());
+        std::stringstream stream;
+        stream << "LED fade direction +1 with period " << period.count()
+               << " ms";
+        LoggerSingleton::get()->info(stream.str());
     }
 
     auto range = led->getRange();
