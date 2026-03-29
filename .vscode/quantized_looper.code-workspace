@@ -8,22 +8,19 @@
         }
     ],
     "settings": {
-        // "C_Cpp.clang_format_style": "file:${workspaceFolder:quantized_looper}/.clang-format",
-        // "C_Cpp.clang_format_style": "file:${fileWorkspaceFolder}/../.clang-format",
-        // "C_Cpp.intelliSenseEngine": "disabled",
         "editor.formatOnSave": true,
         "editor.formatOnType": true,
         "editor.defaultFormatter": null,
         "[cpp]": {
-            // "editor.defaultFormatter": "STMicroelectronics.stm32cube-ide-clangd"
             "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
         },
         "clangd.arguments": [
             "--background-index",
-            "--clang-tidy"
+            "--clang-tidy",
+            "--query-driver=starm-clang.exe",
+            "--query-driver=starm-clang++.exe"
         ],
-        "cmake.ctest.testExplorerIntegrationEnabled": false,
-        // TODO: may want to correctly configure ctest in cmake, but for now C++ TestMate makes life easier
+        "cmake.ctest.testExplorerIntegrationEnabled": false, // C++ TestMate organizes tests much better
         "cmake.copyCompileCommands": "${workspaceFolder}/compile_commands.json",
         "todo-tree.filtering.includedWorkspaces": [
             "[]"
