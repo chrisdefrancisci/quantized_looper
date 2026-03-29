@@ -1,0 +1,46 @@
+{
+    "folders": [
+        {
+            "path": ".."
+        },
+        {
+            "path": "../extern/reusable_synth"
+        }
+    ],
+    "settings": {
+        // "C_Cpp.clang_format_style": "file:${workspaceFolder:quantized_looper}/.clang-format",
+        // "C_Cpp.clang_format_style": "file:${fileWorkspaceFolder}/../.clang-format",
+        // "C_Cpp.intelliSenseEngine": "disabled",
+        "editor.formatOnSave": true,
+        "editor.formatOnType": true,
+        "editor.defaultFormatter": null,
+        "[cpp]": {
+            // "editor.defaultFormatter": "STMicroelectronics.stm32cube-ide-clangd"
+            "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
+        },
+        "clangd.arguments": [
+            "--background-index",
+            "--clang-tidy"
+        ],
+        "cmake.ctest.testExplorerIntegrationEnabled": false,
+        // TODO: may want to correctly configure ctest in cmake, but for now C++ TestMate makes life easier
+        "cmake.copyCompileCommands": "${workspaceFolder}/compile_commands.json",
+        "todo-tree.filtering.includedWorkspaces": [
+            "[]"
+        ],
+        "todo-tree.general.debug": true,
+        "todo-tree.regex.regexCaseSensitive": false,
+        "todo-tree.regex.regex": "(//|#|<!--|/\\*+|^\\s*\\*)\\s*@?($TAGS)",
+        "stm32cube-ide-clangd.path": "cube",
+        "stm32cube-ide-clangd.arguments": [
+            "starm-clangd",
+            "--query-driver=${env:CUBE_BUNDLE_PATH}/st-arm-clang/19.1.6+st.10/bin/starm-clang.exe",
+            "--query-driver=${env:CUBE_BUNDLE_PATH}/st-arm-clang/19.1.6+st.10/bin/starm-clang++.exe",
+            "--compile-commands-dir=${workspaceFolder}"
+        ],
+        "C_Cpp.codeAnalysis.clangTidy.enabled": true
+    },
+    "extensions": {
+        "recommendations": []
+    }
+}

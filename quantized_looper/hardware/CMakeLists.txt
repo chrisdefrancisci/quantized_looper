@@ -1,10 +1,8 @@
-target_sources(quantized_looper
+target_sources(${CMAKE_PROJECT_NAME}
     PRIVATE
         dac_singleton.cpp
     PUBLIC
         FILE_SET HEADERS
-        BASE_DIRS 
-            ${CMAKE_CURRENT_SOURCE_DIR}
         FILES 
             dac_singleton.hpp
             led.hpp

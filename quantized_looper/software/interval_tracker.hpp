@@ -15,7 +15,7 @@ class IntervalTracker
 public:
     IntervalTracker(TickType minInterval, TickType maxInterval) {}
     void addEvent(TickType time) {}
-    TickType getInterval() {}
+    auto getInterval() -> TickType {}
 
 private:
     TickType maxInterval;

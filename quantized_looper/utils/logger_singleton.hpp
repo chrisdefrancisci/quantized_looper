@@ -11,15 +11,18 @@ class LoggerSingleton
 public:
     constexpr static int nLogs = 20;
     constexpr static int logLen = 200;
-    static Logger<nLogs, logLen>* get()
+    static auto get() -> Logger<nLogs, logLen>*
     {
         static Logger<nLogs, logLen> instance;
         return &instance;
     }
 
-    LoggerSingleton(LoggerSingleton const&) = delete;
-    void operator=(LoggerSingleton const&) = delete;
+    LoggerSingleton(const LoggerSingleton&) = delete;
+    auto operator=(const LoggerSingleton&) -> LoggerSingleton& = delete;
+    LoggerSingleton(LoggerSingleton&&) = delete;
+    auto operator=(LoggerSingleton&&) -> LoggerSingleton& = delete;
+    ~LoggerSingleton() = default;
 
 private:
-    LoggerSingleton() {}
+    LoggerSingleton() = default;
 };

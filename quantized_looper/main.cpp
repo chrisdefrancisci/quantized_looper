@@ -42,12 +42,13 @@ extern "C"
 auto logger = LoggerSingleton::get();
 
 // Tap tempo globals
+static volatile uint32_t cycle_time_ms = 1000;   // Default 60 BPM (1 second)
 static constexpr uint32_t MIN_CYCLE_TIME = 250;  // Max of 240 BPM
 static constexpr uint32_t MAX_CYCLE_TIME = 3000; // Min 20 BPM
 
 // TODO: move task
 // TODO: writer interface not tied to UART
-extern UART_HandleTypeDef huart3;
+
 void task_print_logs()
 {
     auto log = logger->remove_log();
@@ -95,7 +96,7 @@ public:
         last_diff = time - last_time;
         last_time = time;
     }
-    TickType getDiff() { return last_diff; }
+    auto getDiff() -> TickType { return last_diff; }
 
 private:
     TickType (*getTime)();
@@ -108,7 +109,14 @@ extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     PinChange::irq_dispatch(registeredPins, GPIO_Pin);
 }
 
-int main()
+using millis = std::chrono::duration<uint32_t, std::milli>;
+
+static auto getTick() -> millis
+{
+    return millis(HAL_GetTick());
+}
+
+auto main() -> int
 {
     HAL_Init();
 
@@ -125,7 +133,8 @@ int main()
 
     // Button press TODO move to its own file
     ButtonTime buttonTime(HAL_GetTick);
-    tempoButton.registerEdgeCallback([&buttonTime]() { buttonTime.irq(); });
+    tempoButton.registerEdgeCallback(
+      [&buttonTime]() -> void { buttonTime.irq(); });
 
     // Task to keep DAC on track
     auto waveform = SineWavetable<ComputationType, 1024, 100, 2148>();
@@ -151,7 +160,9 @@ int main()
 
     // Create LED tasks
     using millis = std::chrono::duration<uint32_t, std::milli>;
-    auto led1Breathe = LedBreatheAnimation(&led1, millis(1000));
+
+    auto led1Breathe =
+      LedBreatheAnimation(&led1, getTick, millis(cycle_time_ms));
     auto led2Toggle = LedToggleAnimation(&led2);
     auto led3Toggle = LedToggleAnimation(&led3);
 
