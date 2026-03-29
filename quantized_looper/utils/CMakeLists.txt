@@ -5,5 +5,6 @@ target_sources(quantized_looper
         BASE_DIRS 
             ${CMAKE_CURRENT_SOURCE_DIR}
         FILES 
+            definitions.hpp
             logger_singleton.hpp
 )
