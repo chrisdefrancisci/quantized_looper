@@ -36,7 +36,7 @@ extern "C"
     extern void SystemClock_Config();
 }
 
-auto logger = LoggerSingleton::get();
+static auto logger = LoggerSingleton::get();
 
 // Tap tempo globals
 static volatile uint32_t cycle_time_ms = 1000;   // Default 60 BPM (1 second)
