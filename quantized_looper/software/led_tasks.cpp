@@ -10,7 +10,7 @@
 #include <quantized_looper/utils/logger_singleton.hpp>
 #include <sstream>
 
-LedToggleAnimation::LedToggleAnimation(LedBase* led)
+LedToggleAnimation::LedToggleAnimation(LedInterface* led)
   : led(led)
   , state(false) {};
 
@@ -27,7 +27,7 @@ void LedToggleAnimation::operator()()
 }
 
 LedBreatheAnimation::LedBreatheAnimation(
-  LedBase* led,
+  LedInterface* led,
   std::chrono::duration<uint32_t, std::milli> (*getTick)(),
   std::chrono::duration<uint32_t, std::milli> period)
   : led(led)

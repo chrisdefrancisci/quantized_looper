@@ -11,7 +11,7 @@
 #include <chrono>
 #include <cstdint>
 
-#include <reusable_synth/hardware/led.hpp>
+#include <reusable_synth/hardware/led_interface.hpp>
 
 class LedToggleAnimation
 {
@@ -21,7 +21,7 @@ public:
      *
      * @param led
      */
-    LedToggleAnimation(LedBase* led);
+    LedToggleAnimation(LedInterface* led);
 
     /**
      * @brief Executes the animation.
@@ -30,7 +30,7 @@ public:
     void operator()();
 
 private:
-    LedBase* led;
+    LedInterface* led;
     bool state;
 };
 
@@ -46,7 +46,7 @@ public:
      * @param period The period of the LED breathing animation
      */
     LedBreatheAnimation(
-      LedBase* led,
+      LedInterface* led,
       std::chrono::duration<uint32_t, std::milli> (*getTick)(),
       std::chrono::duration<uint32_t, std::milli> period);
 
@@ -67,7 +67,7 @@ public:
     void operator()();
 
 private:
-    LedBase* led;
+    LedInterface* led;
     std::chrono::duration<uint32_t, std::milli> (*getTick)();
     std::chrono::duration<uint32_t, std::milli> period;
     std::chrono::duration<uint32_t, std::milli> nextPeriod;

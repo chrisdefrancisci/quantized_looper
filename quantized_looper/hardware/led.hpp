@@ -12,7 +12,7 @@
 #include <utility>
 
 // Reusable synth includes
-#include <reusable_synth/hardware/led.hpp>
+#include <reusable_synth/hardware/led_interface.hpp>
 
 // Hardware includes
 #include <stm32f7xx_hal_gpio.h>
@@ -24,7 +24,7 @@
  * @tparam GPIO_TypeDef
  */
 template<>
-class Led<GPIO_TypeDef> : public LedBase
+class Led<GPIO_TypeDef> : public LedInterface
 {
 public:
     /**
@@ -76,7 +76,7 @@ private:
  * @tparam TIM_HandleTypeDef
  */
 template<>
-class Led<TIM_HandleTypeDef> : public LedBase
+class Led<TIM_HandleTypeDef> : public LedInterface
 {
 public:
     /**
