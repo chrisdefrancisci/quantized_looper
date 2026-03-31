@@ -5,18 +5,56 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "stlinkgdbtarget",
+            "name": "Flash and Debug",
+            "type": "cortex-debug",
+            "gdbPath": "gdb-multiarch",
             "request": "launch",
-            "name": "STM32Cube: STM32 Launch ST-Link GDB Server",
-            "origin": "snippet",
-            "cwd": "${workspaceFolder}",
-            "preBuild": "${command:st-stm32-ide-debug-launch.build}",
-            "runEntry": "main",
-            "imagesAndSymbols": [
-                {
-                    "imageFileName": "${command:st-stm32-ide-debug-launch.get-projects-binary-from-context1}"
-                }
-            ]
+            "servertype": "openocd",
+            "configFiles": [
+                "interface/stlink.cfg",
+                "target/stm32f7x.cfg"
+            ],
+            "executable": "${workspaceFolder}/quantized_looper/build/Debug/quantized_looper.elf",
+            "runToEntryPoint": "main",
+            "svdFile": "${workspaceFolder}/quantized_looper/STM32F67.svd",
+            "rttConfig": {
+                "enabled": true,
+                "address": "auto",
+                "clearSearch": false,
+                "polling_interval": 50,
+                "rtt_start_retry": 2000,
+                "decoders": [
+                    {
+                        "label": "RTT Console",
+                        "port": 0,
+                        "type": "console"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Attach",
+            "type": "cortex-debug",
+            "gdbPath": "gdb-multiarch",
+            "request": "attach",
+            "servertype": "openocd",
+            "configFiles": [
+                "interface/stlink.cfg",
+                "target/stm32f7x.cfg"
+            ],
+            "executable": "${workspaceFolder}/quantized_looper/build/Debug/quantized_looper.elf",
+            "svdFile": "${workspaceFolder}/quantized_looper/STM32F67.svd",
+            "rttConfig": {
+                "enabled": true,
+                "address": "auto",
+                "decoders": [
+                    {
+                        "label": "RTT Console",
+                        "port": 0,
+                        "type": "console"
+                    }
+                ]
+            }
         }
     ]
 }

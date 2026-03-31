@@ -14,9 +14,11 @@
             "name": "default-crosscompile",
             "hidden": true,
             "generator": "Ninja",
+            "environment": {
+                "PATH": "/opt/st/stm32cubeclt_1.21.0/st-arm-clang/bin:$penv{PATH}"
+            },
             "binaryDir": "${sourceDir}/build/${presetName}",
             "toolchainFile": "${sourceDir}/quantized_looper/cmake/starm-clang.cmake",
-            "cmakeExecutable": "cube-cmake",
             "cacheVariables": {
                 "CMAKE_SUPPRESS_DEVELOPER_WARNINGS": "TRUE"
             }
