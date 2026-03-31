@@ -71,7 +71,7 @@ private:
     std::chrono::duration<uint32_t, std::milli> (*getTick)();
     std::chrono::duration<uint32_t, std::milli> period;
     std::chrono::duration<uint32_t, std::milli> nextPeriod;
-    float led_pct;
+    float ledPct;
     float direction;
-    std::chrono::duration<uint32_t, std::milli> last_update_time;
+    std::chrono::duration<uint32_t, std::milli> lastUpdateTime;
 };
