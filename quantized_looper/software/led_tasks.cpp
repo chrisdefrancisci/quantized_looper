@@ -10,7 +10,7 @@
 #include <quantized_looper/utils/logger_singleton.hpp>
 #include <sstream>
 
-LedToggleAnimation::LedToggleAnimation(LedBase* led)
+LedToggleAnimation::LedToggleAnimation(LedInterface* led)
   : led(led)
   , state(false) {};
 
@@ -27,41 +27,41 @@ void LedToggleAnimation::operator()()
 }
 
 LedBreatheAnimation::LedBreatheAnimation(
-  LedBase* led,
+  LedInterface* led,
   std::chrono::duration<uint32_t, std::milli> (*getTick)(),
   std::chrono::duration<uint32_t, std::milli> period)
   : led(led)
   , getTick(getTick)
   , period(period)
   , nextPeriod(period)
-  , led_pct(0)
+  , ledPct(0)
   , direction(1)
-  , last_update_time(0) {};
+  , lastUpdateTime(0) {};
 
 void LedBreatheAnimation::operator()()
 {
-    auto current_time = getTick();
+    auto currentTime = getTick();
 
-    if (last_update_time == std::chrono::duration<uint32_t, std::milli>(0)) {
-        last_update_time = current_time;
+    if (lastUpdateTime == std::chrono::duration<uint32_t, std::milli>(0)) {
+        lastUpdateTime = currentTime;
     }
 
-    auto elapsed = current_time - last_update_time;
+    auto elapsed = currentTime - lastUpdateTime;
     float change =
       direction * 2.0F * (float)elapsed.count() / (float)period.count();
 
-    led_pct += change;
+    ledPct += change;
 
-    if (led_pct >= 1.0F) {
-        led_pct = 2.0F - led_pct; // Reflect over 1.0
+    if (ledPct >= 1.0F) {
+        ledPct = 2.0F - ledPct; // Reflect over 1.0
         direction = -1.0F;
         period = nextPeriod;
         std::stringstream stream;
         stream << "LED fade direction -1 with period " << period.count()
                << " ms";
         LoggerSingleton::get()->info(stream.str());
-    } else if (led_pct < 0.0F) {
-        led_pct = -led_pct; // Reflect over 0
+    } else if (ledPct < 0.0F) {
+        ledPct = -ledPct; // Reflect over 0
         direction = 1.0F;
         period = nextPeriod;
         std::stringstream stream;
@@ -73,9 +73,9 @@ void LedBreatheAnimation::operator()()
     auto range = led->getRange();
     // TODO: replaces this with the led->setIntensity(float)
     //  And then remove the setIntensity(int) from the interface
-    int final_amt = range.first + (int)((range.second - range.first) * led_pct);
+    int finalAmt = range.first + (int)((range.second - range.first) * ledPct);
 
-    led->setIntensity(final_amt);
+    led->setIntensity(finalAmt);
     led->on();
-    last_update_time = current_time;
+    lastUpdateTime = currentTime;
 }
