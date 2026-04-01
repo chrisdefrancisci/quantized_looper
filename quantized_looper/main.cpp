@@ -42,16 +42,16 @@ extern "C"
 static auto logger = LoggerSingleton::get();
 
 // Tap tempo globals
-static volatile uint32_t cycle_time_ms = 1000;   // Default 60 BPM (1 second)
-static constexpr uint32_t MIN_CYCLE_TIME = 250;  // Max of 240 BPM
-static constexpr uint32_t MAX_CYCLE_TIME = 3000; // Min 20 BPM
+static volatile uint32_t cycleTimeMs = 1000;   // Default 60 BPM (1 second)
+static constexpr uint32_t minCycleTime = 250;  // Max of 240 BPM
+static constexpr uint32_t maxCycleTime = 3000; // Min 20 BPM
 
 // TODO: move task
 // TODO: writer interface not tied to UART
 
 void task_print_logs()
 {
-    auto log = logger->remove_log();
+    auto log = logger->removeLog();
     if (log.has_value()) {
         const char* msg = log->pBuffer();
         // TODO: flush log in non-blocking mode using HAL_UART_Transmit_IT or
@@ -70,7 +70,7 @@ extern "C" void EXTI15_10_IRQHandler(void)
 }
 
 static std::array<PinChange::RegisteredPin, 1> registeredPins;
-static std::chrono::duration<uint32_t, std::milli> debounceTime(MIN_CYCLE_TIME);
+static std::chrono::duration<uint32_t, std::milli> debounceTime(minCycleTime);
 static DebouncedButtonEdge<std::chrono::duration<uint32_t, std::milli>>
   tempoButton(
     registeredPins,
@@ -109,11 +109,11 @@ extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     PinChange::irq_dispatch(registeredPins, GPIO_Pin);
 }
 
-using millis = std::chrono::duration<uint32_t, std::milli>;
+using Millis = std::chrono::duration<uint32_t, std::milli>;
 
-static auto getTick() -> millis
+static auto get_tick() -> Millis
 {
-    return millis(HAL_GetTick());
+    return Millis(HAL_GetTick());
 }
 
 auto main() -> int
@@ -162,14 +162,14 @@ auto main() -> int
     using millis = std::chrono::duration<uint32_t, std::milli>;
 
     auto led1Breathe =
-      LedBreatheAnimation(&led1, getTick, millis(cycle_time_ms));
+      LedBreatheAnimation(&led1, get_tick, millis(cycleTimeMs));
     auto led2Toggle = LedToggleAnimation(&led2);
     auto led3Toggle = LedToggleAnimation(&led3);
 
     auto buttonToLed = [&led1Breathe, &buttonTime]() -> void {
         // Lambda sets period based on button interrupt
-        if (buttonTime.getDiff() > MIN_CYCLE_TIME &&
-            buttonTime.getDiff() < MAX_CYCLE_TIME) {
+        if (buttonTime.getDiff() > minCycleTime &&
+            buttonTime.getDiff() < maxCycleTime) {
             led1Breathe.setPeriod(std::chrono::duration<uint32_t, std::milli>(
               buttonTime.getDiff()));
         }
