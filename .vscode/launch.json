@@ -14,7 +14,7 @@
                 "interface/stlink.cfg",
                 "target/stm32f7x.cfg"
             ],
-            "executable": "${workspaceFolder}/quantized_looper/build/Debug/quantized_looper.elf",
+            "executable": "${workspaceFolder}/build/Debug/QuantizedLooper.elf",
             "runToEntryPoint": "main",
             "svdFile": "${workspaceFolder}/quantized_looper/STM32F67.svd",
             "rttConfig": {
