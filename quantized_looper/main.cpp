@@ -14,6 +14,7 @@
 #include "stm32f7xx_hal.h"
 #include "stm32f7xx_hal_dac.h"
 #include "stm32f7xx_hal_tim.h"
+#include "stm32f7xx_hal_uart.h"
 #include <gpio.h>
 #include <main.h>
 #include <tim.h>
@@ -39,8 +40,6 @@ extern "C"
     extern void SystemClock_Config();
 }
 
-static auto logger = LoggerSingleton::get();
-
 // Tap tempo globals
 static volatile uint32_t cycleTimeMs = 1000;   // Default 60 BPM (1 second)
 static constexpr uint32_t minCycleTime = 250;  // Max of 240 BPM
@@ -49,16 +48,17 @@ static constexpr uint32_t maxCycleTime = 3000; // Min 20 BPM
 // TODO: move task
 // TODO: writer interface not tied to UART
 
+static std::array<char, 200> logBuf;
+
 void task_print_logs()
 {
-    auto log = logger->removeLog();
+    auto log = LoggerSingleton::get()->removeLog();
     if (log.has_value()) {
         const char* msg = log->pBuffer();
-        // TODO: flush log in non-blocking mode using HAL_UART_Transmit_IT or
-        (void)msg;
-        // HAL_UART_Transmit_DMA HAL_UART_Transmit(&huart3, (uint8_t*)msg,
-        // strlen(msg), 100); HAL_UART_Transmit(&huart3, (uint8_t*)"\r\n", 2,
-        // 100);
+        memcpy(logBuf.data(), msg, strlen(msg));
+        size_t nlIdx = std::min(strlen(msg), logBuf.size() - 1);
+        logBuf.at(nlIdx) = '\n';
+        HAL_UART_Transmit_IT(&huart3, (uint8_t*)logBuf.data(), nlIdx + 1);
     }
 }
 
@@ -133,16 +133,18 @@ auto main() -> int
 
     // Button press TODO move to its own file
     ButtonTime buttonTime(HAL_GetTick);
-    tempoButton.registerEdgeCallback(
-      [&buttonTime]() -> void { buttonTime.irq(); });
+    std::function<void()> callback = [&buttonTime]() -> void {
+        buttonTime.irq();
+    };
+    // tempoButton.registerEdgeCallback(callback);
 
     // Task to keep DAC on track
     auto waveform = SineWavetable<ComputationType, 1024, 100, 2148>();
     WavetableOsc osc(waveform.data);
     osc.setFrequency(100, 96000);
-    std::array<ComputationType, computationBufferSize> inputBuffer;
+    std::array<ComputationType, computationBufferSize> inputBuffer{};
 
-    auto dac = DacSingleton::get(
+    auto* dac = DacSingleton::get(
       std::span(inputBuffer),
       +[](AnalogInterfaceType& y, const ComputationType& x) -> void { y = x; });
     auto writeWaveform = [&osc, &inputBuffer, &dac]() -> void {
@@ -159,10 +161,8 @@ auto main() -> int
     auto led3 = Led<GPIO_TypeDef>(LD3_GPIO_Port, LD3_Pin);
 
     // Create LED tasks
-    using millis = std::chrono::duration<uint32_t, std::milli>;
-
     auto led1Breathe =
-      LedBreatheAnimation(&led1, get_tick, millis(cycleTimeMs));
+      LedBreatheAnimation(&led1, get_tick, Millis(cycleTimeMs));
     auto led2Toggle = LedToggleAnimation(&led2);
     auto led3Toggle = LedToggleAnimation(&led3);
 
@@ -178,37 +178,37 @@ auto main() -> int
     // Organize tasks in priority list
     // TODO: why do we need to explicitly cast lambdas to
     // not crash?
-    std::array<std::unique_ptr<TaskControlBlockInterface<millis>>, 6> tasks = {
-        std::make_unique<TaskControlBlock<millis, decltype(writeWaveform)>>(
+    std::array<std::unique_ptr<TaskControlBlockInterface<Millis>>, 6> tasks = {
+        std::make_unique<TaskControlBlock<Millis, decltype(writeWaveform)>>(
           writeWaveform,
-          []() -> millis { return millis(HAL_GetTick()); },
-          millis(1),
-          millis(0)),
-        std::make_unique<TaskControlBlock<millis, LedBreatheAnimation>>(
+          []() -> Millis { return Millis(HAL_GetTick()); },
+          Millis(1),
+          Millis(0)),
+        std::make_unique<TaskControlBlock<Millis, LedBreatheAnimation>>(
           led1Breathe,
-          []() -> millis { return millis(HAL_GetTick()); },
-          millis(20),
-          millis(0)),
-        std::make_unique<TaskControlBlock<millis, LedToggleAnimation>>(
+          []() -> Millis { return Millis(HAL_GetTick()); },
+          Millis(20),
+          Millis(0)),
+        std::make_unique<TaskControlBlock<Millis, LedToggleAnimation>>(
           led2Toggle,
-          []() -> millis { return millis(HAL_GetTick()); },
-          millis(800),
-          millis(0)),
-        std::make_unique<TaskControlBlock<millis, LedToggleAnimation>>(
+          []() -> Millis { return Millis(HAL_GetTick()); },
+          Millis(800),
+          Millis(0)),
+        std::make_unique<TaskControlBlock<Millis, LedToggleAnimation>>(
           led3Toggle,
-          []() -> millis { return millis(HAL_GetTick()); },
-          millis(600),
-          millis(0)),
-        std::make_unique<TaskControlBlock<millis, void (*)()>>(
+          []() -> Millis { return Millis(HAL_GetTick()); },
+          Millis(600),
+          Millis(0)),
+        std::make_unique<TaskControlBlock<Millis, void (*)()>>(
           task_print_logs,
-          []() -> millis { return millis(HAL_GetTick()); },
-          millis(100),
-          millis(0)),
-        std::make_unique<TaskControlBlock<millis, decltype(buttonToLed)>>(
+          []() -> Millis { return Millis(HAL_GetTick()); },
+          Millis(100),
+          Millis(0)),
+        std::make_unique<TaskControlBlock<Millis, decltype(buttonToLed)>>(
           buttonToLed,
-          []() -> millis { return millis(HAL_GetTick()); },
-          millis(5),
-          millis(1))
+          []() -> Millis { return Millis(HAL_GetTick()); },
+          Millis(5),
+          Millis(1))
     };
 
     // Run tasks, do not return
