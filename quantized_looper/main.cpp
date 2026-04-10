@@ -47,9 +47,7 @@ static constexpr uint32_t maxCycleTime = 3000; // Min 20 BPM
 
 // TODO: move task
 // TODO: writer interface not tied to UART
-
 static std::array<char, 200> logBuf;
-
 void task_print_logs()
 {
     auto log = LoggerSingleton::get()->removeLog();
@@ -71,14 +69,6 @@ extern "C" void EXTI15_10_IRQHandler(void)
 
 static std::array<PinChange::RegisteredPin, 1> registeredPins;
 static std::chrono::duration<uint32_t, std::milli> debounceTime(minCycleTime);
-static DebouncedButtonEdge<std::chrono::duration<uint32_t, std::milli>>
-  tempoButton(
-    registeredPins,
-    USER_Btn_Pin,
-    []() -> std::chrono::duration<uint32_t, std::milli> {
-        return std::chrono::duration<uint32_t, std::milli>(HAL_GetTick());
-    },
-    debounceTime);
 
 // TODO: move button timing to its own file
 template<typename TickType>
@@ -131,12 +121,20 @@ auto main() -> int
     MX_TIM3_Init();
     MX_USART3_UART_Init();
 
-    // Button press TODO move to its own file
+    // Button press
+    // TODO move to its own file
+    DebouncedButtonEdge<std::chrono::duration<uint32_t, std::milli>>
+      tempoButton(
+        registeredPins,
+        USER_Btn_Pin,
+        []() -> std::chrono::duration<uint32_t, std::milli> {
+            return std::chrono::duration<uint32_t, std::milli>(HAL_GetTick());
+        },
+        debounceTime);
     ButtonTime buttonTime(HAL_GetTick);
-    std::function<void()> callback = [&buttonTime]() -> void {
-        buttonTime.irq();
-    };
-    // tempoButton.registerEdgeCallback(callback);
+    assert_param(tempoButton.isRegistered());
+    tempoButton.registerEdgeCallback(
+      [&buttonTime]() -> void { buttonTime.irq(); });
 
     // Task to keep DAC on track
     auto waveform = SineWavetable<ComputationType, 1024, 100, 2148>();
