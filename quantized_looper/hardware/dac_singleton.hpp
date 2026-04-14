@@ -20,14 +20,15 @@ public:
     constexpr static int outputSize =
       QuantizedLooper::analogInterfaceBufferSize;
 
-    static Dac<ComputationType, DacType, inputSize>* get(
-      std::span<ComputationType, inputSize> inputData,
-      void (*convert)(DacType& out, const ComputationType& in));
+    static auto get(std::span<ComputationType, inputSize> inputData,
+                    void (*convert)(DacType& out, const ComputationType& in))
+      -> Dac<ComputationType, DacType, inputSize>*;
 
     DacSingleton(const DacSingleton&) = delete;
     auto operator=(const DacSingleton&) -> DacSingleton& = delete;
     DacSingleton(DacSingleton&&) = delete;
     auto operator=(DacSingleton&&) = delete;
+    ~DacSingleton() = default;
 
 private:
     DacSingleton() = default;

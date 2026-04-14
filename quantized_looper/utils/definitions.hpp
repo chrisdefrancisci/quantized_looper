@@ -7,11 +7,16 @@
 
 #pragma once
 
+#include <chrono>
+#include <cstdint>
+
 namespace QuantizedLooper {
 
 using ComputationType = float;
 using AnalogInterfaceType = uint32_t;
+using TickType = std::chrono::duration<uint32_t, std::milli>;
 
 constexpr int computationBufferSize = 256;
 constexpr int analogInterfaceBufferSize = computationBufferSize * 2;
+
 }

@@ -33,11 +33,11 @@ extern "C" void HAL_DAC_ConvCpltCallbackCh1(DAC_HandleTypeDef* hdac)
     completeCallback();
 }
 
-Dac<DacSingleton::ComputationType,
-    DacSingleton::DacType,
-    DacSingleton::inputSize>*
-DacSingleton::get(std::span<ComputationType, inputSize> inputData,
-                  void (*convert)(DacType& out, const ComputationType& in))
+auto DacSingleton::get(std::span<ComputationType, inputSize> inputData,
+                       void (*convert)(DacType& out, const ComputationType& in))
+  -> Dac<DacSingleton::ComputationType,
+         DacSingleton::DacType,
+         DacSingleton::inputSize>*
 {
     static Dac<ComputationType, DacType, inputSize> instance(
       inputData, outputBuffer, convert);
