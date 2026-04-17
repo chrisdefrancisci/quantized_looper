@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.22)
-project(QuantizedLooper VERSION 0.1.0)
+if(CMAKE_CROSSCOMPILING)
+    project(QuantizedLooper VERSION 0.1.0)
+else()
+    project(QuantizedLooperTests VERSION 0.1.0)
+endif()
 
 enable_testing()
 
@@ -64,7 +68,7 @@ if(CMAKE_CROSSCOMPILING)
 else()
     message("Local build for QuantizedLooperTests")
     # Create an executable object type
-    add_executable(${CMAKE_PROJECT_NAME})
+    add_executable("${CMAKE_PROJECT_NAME}")
     add_subdirectory(tests)
 
     include(FetchContent)
