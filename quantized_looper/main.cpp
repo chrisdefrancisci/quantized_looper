@@ -21,7 +21,6 @@
 #include <usart.h>
 
 // Custom includes
-#include <quantized_looper/hardware/dac_singleton.hpp>
 #include <quantized_looper/hardware/led.hpp>
 #include <quantized_looper/software/led_tasks.hpp>
 #include <quantized_looper/utils/definitions.hpp>

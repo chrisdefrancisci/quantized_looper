@@ -19,4 +19,40 @@ using TickType = std::chrono::duration<uint32_t, std::milli>;
 constexpr int computationBufferSize = 256;
 constexpr int analogInterfaceBufferSize = computationBufferSize * 2;
 
+constexpr ComputationType computationMin = -1.0;
+constexpr ComputationType computationMax = 1.0;
+constexpr AnalogInterfaceType analogMin = 0;
+constexpr AnalogInterfaceType analogMax = 4096;
+
+/**
+ * @brief Scales a value from a peripheral that reads analog values to the
+ * computation type.
+ *
+ * @param in The value from the analog peripheral.
+ * @return ComputationType The value to be used in computations.
+ */
+constexpr auto scale(AnalogInterfaceType in) -> ComputationType
+{
+    using T = std::common_type_t<AnalogInterfaceType, ComputationType>;
+    T denominator = analogMax - analogMin;
+    T numerator = computationMax - computationMin;
+    return ComputationType((numerator * T(in - analogMin) / denominator) +
+                           computationMin);
+};
+
+/**
+ * @brief Scales a value from computation to the analog peripheral type.
+ *
+ * @param in The computed value.
+ * @return AnalogInterfaceType The value to be used by the peripheral.
+ */
+constexpr auto scale(ComputationType in) -> AnalogInterfaceType
+{
+    using T = std::common_type_t<AnalogInterfaceType, ComputationType>;
+    T denominator = computationMax - computationMin;
+    T numerator = analogMax - analogMin;
+    return AnalogInterfaceType(
+      (numerator * T(in - computationMin) / denominator) + analogMin);
+};
+
 }

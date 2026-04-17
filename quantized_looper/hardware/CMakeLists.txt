@@ -1,9 +1,9 @@
 target_sources(${CMAKE_PROJECT_NAME}
     PRIVATE
-        dac_singleton.cpp
+        dac.cpp
     PUBLIC
         FILE_SET HEADERS
         FILES 
-            dac_singleton.hpp
+            dac.hpp
             led.hpp
 )

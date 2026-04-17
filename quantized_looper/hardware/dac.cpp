@@ -5,7 +5,7 @@
  * @date 2026-03-24
  */
 
-#include <quantized_looper/hardware/dac_singleton.hpp>
+#include <quantized_looper/hardware/dac.hpp>
 
 #include <array>
 
@@ -19,8 +19,7 @@
 
 #include <reusable_synth/hardware/interrupt_handler.hpp>
 
-static std::array<DacSingleton::DacType, DacSingleton::outputSize>
-  outputBuffer = { 0 };
+static std::array<Dac::DacType, Dac::outputSize> outputBuffer = { 0 };
 static InterruptHandler halfCompleteCallback{};
 static InterruptHandler completeCallback{};
 
@@ -33,8 +32,8 @@ extern "C" void HAL_DAC_ConvCpltCallbackCh1(DAC_HandleTypeDef* hdac)
     completeCallback();
 }
 
-auto DacSingleton::get(std::span<ComputationType, inputSize> inputData,
-                       void (*convert)(DacType& out, const ComputationType& in))
+auto Dac::get(std::span<ComputationType, inputSize> inputData,
+              void (*convert)(DacType& out, const ComputationType& in))
   -> Dac<DacSingleton::ComputationType,
          DacSingleton::DacType,
          DacSingleton::inputSize>*

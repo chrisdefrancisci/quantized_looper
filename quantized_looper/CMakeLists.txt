@@ -1,2 +1,5 @@
-add_subdirectory(hardware)
+if (CMAKE_CROSSCOMPILING)
+    add_subdirectory(hardware)
+endif()
 add_subdirectory(software)
+add_subdirectory(utils)

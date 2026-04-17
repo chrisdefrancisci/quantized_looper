@@ -1,4 +1,4 @@
-target_sources(quantized_looper
+target_sources(${CMAKE_PROJECT_NAME}
     # PRIVATE
     PUBLIC
         FILE_SET HEADERS
