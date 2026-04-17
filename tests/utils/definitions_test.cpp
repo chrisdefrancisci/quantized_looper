@@ -14,8 +14,8 @@ TEST(DefinitionsTest, Scale)
     EXPECT_EQ(scale(computationMax), analogMax);
 
     // Mid-to-mid conversion
-    EXPECT_EQ(scale((analogMax - analogMin) / 2),
-              (computationMax - computationMin) / 2.0f);
-    EXPECT_EQ(scale((computationMax - computationMin) / 2.0f),
-              (analogMax - analogMin) / 2);
+    EXPECT_EQ(scale((analogMax - analogMin) / 2 + analogMin),
+              (computationMax - computationMin) / 2.0f + computationMin);
+    EXPECT_EQ(scale((computationMax - computationMin) / 2.0f + computationMin),
+              (analogMax - analogMin) / 2 + analogMin);
 }
