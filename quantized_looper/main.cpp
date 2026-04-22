@@ -21,6 +21,7 @@
 #include <usart.h>
 
 // Custom includes
+#include <quantized_looper/hardware/dacDma.hpp>
 #include <quantized_looper/hardware/led.hpp>
 #include <quantized_looper/software/led_tasks.hpp>
 #include <quantized_looper/utils/definitions.hpp>
@@ -136,19 +137,19 @@ auto main() -> int
       [&buttonTime]() -> void { buttonTime.irq(); });
 
     // Task to keep DAC on track
-    auto waveform = SineWavetable<ComputationType, 1024, 100, 2148>();
+    auto waveform = SineWavetable<ComputationType, 1024>(computationMin / 2.0f,
+                                                         computationMax / 2.0f);
     WavetableOsc osc(waveform.data);
     osc.setFrequency(100, 96000);
     std::array<ComputationType, computationBufferSize> inputBuffer{};
 
-    auto* dac = DacSingleton::get(
-      std::span(inputBuffer),
-      +[](AnalogInterfaceType& y, const ComputationType& x) -> void { y = x; });
+    Dac dac(inputBuffer);
+    Dac::init();
     auto writeWaveform = [&osc, &inputBuffer, &dac]() -> void {
-        if (dac->isReady()) {
+        if (dac.isReady()) {
             osc.increment(inputBuffer);
         }
-        dac->execute();
+        dac.execute();
     };
 
     // Create LED handlers

@@ -1,7 +1,7 @@
 /**
  * @file dac.hpp
  * @author Chris DeFrancisci (chrisdefrancisci@gmail.com)
- * @brief Implements a DAC singleton to hide all the ugliness
+ * @brief Implements a DAC wrapper for channel 1 of the onboard DAC.
  * @date 2026-03-24
  */
 #pragma once
@@ -23,19 +23,18 @@ public:
     constexpr static int outputSize =
       QuantizedLooper::analogInterfaceBufferSize;
 
+    Dac(std::span<ComputationType, inputSize> inputData);
+
+    static void init();
+
     void execute()
     {
         dmaManager.execute<DmaDirection::MemoryToPeripheral>();
-        std::ranges::transform(
-          memoryData,
-          convertedMemoryData.begin(),
-          +[](const ComputationType& in) -> DacType {
-              using T = std::common_type_t<DacType, ComputationType>;
-              T = 
-              return DacType{};
-          });
+        std::ranges::transform(memoryData,
+                               convertedMemoryData.begin(),
+                               QuantizedLooper::scale_output);
     }
-    void isReady() { dmaManager.isReady(); }
+    auto isReady() -> bool { return dmaManager.isReady(); }
 
     Dac(const Dac&) = delete;
     auto operator=(const Dac&) -> Dac& = delete;
@@ -47,5 +46,5 @@ private:
     std::span<ComputationType, inputSize> memoryData;
     std::array<DacType, inputSize> convertedMemoryData{};
     std::span<DacType, outputSize> periphData;
-    CircularDma<DacType, outputSize> dmaManager;
+    CircularDma<DacType, inputSize> dmaManager;
 };

@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.22)
-if(CMAKE_CROSSCOMPILING)
-    project(QuantizedLooper VERSION 0.1.0)
-else()
-    project(QuantizedLooperTests VERSION 0.1.0)
-endif()
+# if(CMAKE_CROSSCOMPILING) # TODO can't use cmake_crosscompiling to set project name
+project(QuantizedLooper VERSION 0.1.0)
+# else()
+    # project(QuantizedLooperTests VERSION 0.1.0)
+# endif()
 
 enable_testing()
 

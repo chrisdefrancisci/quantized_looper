@@ -31,7 +31,7 @@ constexpr AnalogInterfaceType analogMax = 4096;
  * @param in The value from the analog peripheral.
  * @return ComputationType The value to be used in computations.
  */
-constexpr auto scale(AnalogInterfaceType in) -> ComputationType
+constexpr auto scale_input(AnalogInterfaceType in) -> ComputationType
 {
     using T = std::common_type_t<AnalogInterfaceType, ComputationType>;
     T denominator = analogMax - analogMin;
@@ -46,7 +46,7 @@ constexpr auto scale(AnalogInterfaceType in) -> ComputationType
  * @param in The computed value.
  * @return AnalogInterfaceType The value to be used by the peripheral.
  */
-constexpr auto scale(ComputationType in) -> AnalogInterfaceType
+constexpr auto scale_output(ComputationType in) -> AnalogInterfaceType
 {
     using T = std::common_type_t<AnalogInterfaceType, ComputationType>;
     T denominator = computationMax - computationMin;

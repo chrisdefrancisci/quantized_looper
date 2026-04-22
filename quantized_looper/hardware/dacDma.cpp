@@ -5,7 +5,7 @@
  * @date 2026-03-24
  */
 
-#include <quantized_looper/hardware/dac.hpp>
+#include <quantized_looper/hardware/dacDma.hpp>
 
 #include <array>
 
@@ -17,6 +17,7 @@
 #include "stm32f7xx_hal_tim.h"
 #include <tim.h>
 
+#include <quantized_looper/utils/logger_singleton.hpp>
 #include <reusable_synth/hardware/interrupt_handler.hpp>
 
 static std::array<Dac::DacType, Dac::outputSize> outputBuffer = { 0 };
@@ -32,25 +33,22 @@ extern "C" void HAL_DAC_ConvCpltCallbackCh1(DAC_HandleTypeDef* hdac)
     completeCallback();
 }
 
-auto Dac::get(std::span<ComputationType, inputSize> inputData,
-              void (*convert)(DacType& out, const ComputationType& in))
-  -> Dac<DacSingleton::ComputationType,
-         DacSingleton::DacType,
-         DacSingleton::inputSize>*
+Dac::Dac(std::span<ComputationType, inputSize> inputData)
+  : memoryData(inputData)
+  , periphData(outputBuffer)
+  , dmaManager(convertedMemoryData, outputBuffer)
 {
-    static Dac<ComputationType, DacType, inputSize> instance(
-      inputData, outputBuffer, convert);
-
-    if (halfCompleteCallback.isConnected() && completeCallback.isConnected()) {
-        return &instance;
-    }
 
     // Connect callbacks
-    halfCompleteCallback.connect<&decltype(instance)::setHalfCompleteFlag>(
-      &instance);
-    completeCallback.connect<&decltype(instance)::setCompleteFlag>(&instance);
+    halfCompleteCallback.connect<&decltype(dmaManager)::setHalfCompleteFlag>(
+      &dmaManager);
+    completeCallback.connect<&decltype(dmaManager)::setCompleteFlag>(
+      &dmaManager);
+}
 
-    // Start hardware
+void Dac::init()
+{
+    LoggerSingleton::get()->info("Initializing DAC");
     auto status = HAL_TIM_Base_Start(&htim2);
     assert_param(status == HAL_OK);
     status = HAL_DAC_Start_DMA(&hdac,
@@ -60,6 +58,4 @@ auto Dac::get(std::span<ComputationType, inputSize> inputData,
                                DAC_ALIGN_12B_R);
 
     assert_param(status == HAL_OK);
-
-    return &instance;
 }
