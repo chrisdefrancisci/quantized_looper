@@ -5,13 +5,14 @@
  * @date 2025-12-27
  */
 
+#pragma once
+
 // Library includes
 #include <functional>
 #include <utility>
 
 // Reusable synth includes
-#include <reusable_synth/hardware/led.hpp>
-// #include "reusable_synth/Hardware/led.hpp"
+#include <reusable_synth/hardware/led_interface.hpp>
 
 // Hardware includes
 #include <stm32f7xx_hal_gpio.h>
@@ -23,7 +24,7 @@
  * @tparam GPIO_TypeDef
  */
 template<>
-class led<GPIO_TypeDef> : public ledBase
+class Led<GPIO_TypeDef> : public LedInterface
 {
 public:
     /**
@@ -32,7 +33,7 @@ public:
      * @param handle GPIO handle
      * @param pin Pin number
      */
-    led(GPIO_TypeDef* handle, unsigned int pin)
+    Led(GPIO_TypeDef* handle, unsigned int pin)
       : handle(handle)
       , pin(pin) {};
 
@@ -40,21 +41,27 @@ public:
 
     void off() override { HAL_GPIO_WritePin(handle, pin, GPIO_PIN_RESET); }
 
-    int test{};
     void setIntensity(int value) override
     {
         if (value != 0) {
-            on();
+            HAL_GPIO_WritePin(handle, pin, GPIO_PIN_SET);
         } else {
-            off();
+            HAL_GPIO_WritePin(handle, pin, GPIO_PIN_RESET);
         }
     }
 
-    void setIntensity(float value) override { setIntensity(value > 0); }
-
-    std::pair<int, int> getRange() const override
+    void setIntensity(float value) override
     {
-        return std::pair<int, int>(0, 1);
+        if (value > 0.0F) {
+            HAL_GPIO_WritePin(handle, pin, GPIO_PIN_SET);
+        } else {
+            HAL_GPIO_WritePin(handle, pin, GPIO_PIN_RESET);
+        }
+    }
+
+    [[nodiscard]] auto getRange() const -> std::pair<int, int> override
+    {
+        return { 0, 1 };
     }
 
 private:
@@ -69,33 +76,33 @@ private:
  * @tparam TIM_HandleTypeDef
  */
 template<>
-class led<TIM_HandleTypeDef> : public ledBase
+class Led<TIM_HandleTypeDef> : public LedInterface
 {
 public:
     /**
-     * @brief Construct a new led object
+     * @brief Construct a new Led object
      *
      * @param handle PWM handle
      * @param channel PWM channel
      * @param constructor PWM init function
      * @param destructor PWM deinit function
      */
-    led(
+    Led(
       TIM_HandleTypeDef* handle,
       unsigned int channel,
-      std::function<void()> constructor = []() {},
-      std::function<void()> destructor = []() {})
+      std::function<void()> constructor = []() -> void {},
+      std::function<void()> destructor = []() -> void {})
       : handle(handle)
       , channel(channel)
       , constructor(constructor)
-      , destructor(destructor)
+      , destructor(std::move(destructor))
     {
         constructor();
         range.first = 0;
-        range.second = handle->Init.Period;
+        range.second = (int)handle->Init.Period;
     };
 
-    virtual ~led() { destructor(); };
+    ~Led() override { destructor(); };
 
     void on() override { HAL_TIM_PWM_Start(handle, channel); }
 
@@ -103,22 +110,24 @@ public:
 
     void setIntensity(int value) override
     {
-        off();
         // Ensure value is within range
         value = value > range.second ? range.second : value;
         value = value < range.first ? range.first : value;
 
         handle->Instance->CCR3 = value;
-        on();
     }
 
     void setIntensity(float value) override
     {
-        int valueInt = (range.second - range.first) * value - range.first;
+        int valueInt =
+          int(float(range.second - range.first) * value) - range.first;
         setIntensity(valueInt);
     }
 
-    std::pair<int, int> getRange() const override { return range; }
+    [[nodiscard]] auto getRange() const -> std::pair<int, int> override
+    {
+        return range;
+    }
 
 private:
     TIM_HandleTypeDef* handle;

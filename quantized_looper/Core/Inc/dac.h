@@ -1,13 +1,13 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file    tim.h
+  * @file    dac.h
   * @brief   This file contains all the function prototypes for
-  *          the tim.c file
+  *          the dac.c file
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -18,8 +18,8 @@
   */
 /* USER CODE END Header */
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __TIM_H__
-#define __TIM_H__
+#ifndef __DAC_H__
+#define __DAC_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,26 +32,21 @@ extern "C" {
 
 /* USER CODE END Includes */
 
-extern TIM_HandleTypeDef htim2;
-
-extern TIM_HandleTypeDef htim3;
+extern DAC_HandleTypeDef hdac;
 
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
 
-void MX_TIM2_Init(void);
-void MX_TIM3_Init(void);
-
-void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
+void MX_DAC_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-void MX_TIM3_DeInit(void);
+
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* __TIM_H__ */
+#endif /* __DAC_H__ */
 

@@ -1,0 +1,60 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Flash and Debug",
+            "type": "cortex-debug",
+            "gdbPath": "gdb-multiarch",
+            "request": "launch",
+            "servertype": "openocd",
+            "configFiles": [
+                "interface/stlink.cfg",
+                "target/stm32f7x.cfg"
+            ],
+            "executable": "${workspaceFolder}/build/Debug/QuantizedLooper.elf",
+            "runToEntryPoint": "main",
+            "svdFile": "${workspaceFolder}/quantized_looper/STM32F67.svd",
+            "rttConfig": {
+                "enabled": true,
+                "address": "auto",
+                "clearSearch": false,
+                "polling_interval": 50,
+                "rtt_start_retry": 2000,
+                "decoders": [
+                    {
+                        "label": "RTT Console",
+                        "port": 0,
+                        "type": "console"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Attach",
+            "type": "cortex-debug",
+            "gdbPath": "gdb-multiarch",
+            "request": "attach",
+            "servertype": "openocd",
+            "configFiles": [
+                "interface/stlink.cfg",
+                "target/stm32f7x.cfg"
+            ],
+            "executable": "${workspaceFolder}/build/Debug/QuantizedLooper.elf",
+            "svdFile": "${workspaceFolder}/quantized_looper/STM32F67.svd",
+            "rttConfig": {
+                "enabled": true,
+                "address": "auto",
+                "decoders": [
+                    {
+                        "label": "RTT Console",
+                        "port": 0,
+                        "type": "console"
+                    }
+                ]
+            }
+        }
+    ]
+}

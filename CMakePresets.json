@@ -1,0 +1,73 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "default-tests-windows",
+            "hidden": true,
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build-tests/${presetName}",
+            "cacheVariables": {
+                "CMAKE_SUPPRESS_DEVELOPER_WARNINGS": "TRUE"
+            }
+        },
+        {
+            "name": "default-crosscompile",
+            "hidden": true,
+            "generator": "Ninja",
+            "environment": {
+                "PATH": "/opt/st/stm32cubeclt_1.21.0/st-arm-clang/bin:$penv{PATH}"
+            },
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "toolchainFile": "${sourceDir}/quantized_looper/cmake/starm-clang.cmake",
+            "cacheVariables": {
+                "CMAKE_SUPPRESS_DEVELOPER_WARNINGS": "TRUE"
+            }
+        },
+        {
+            "name": "Debug",
+            "inherits": "default-crosscompile",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "Release",
+            "inherits": "default-crosscompile",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "Debug-Tests",
+            "inherits": "default-tests-windows",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "Release-Tests",
+            "inherits": "default-tests-windows",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "Debug",
+            "configurePreset": "Debug"
+        },
+        {
+            "name": "Release",
+            "configurePreset": "Release"
+        },
+        {
+            "name": "Debug-Tests",
+            "configurePreset": "Debug-Tests"
+        },
+        {
+            "name": "Release-Tests",
+            "configurePreset": "Release-Tests"
+        }
+    ]
+}

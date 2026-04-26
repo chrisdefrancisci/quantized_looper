@@ -1,0 +1,37 @@
+{
+    "folders": [
+        {
+            "path": ".."
+        },
+        {
+            "path": "../extern/reusable_synth"
+        }
+    ],
+    "settings": {
+        "[cpp]": {
+            "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
+        },
+        "C_Cpp.codeAnalysis.clangTidy.enabled": true,
+        "clangd.arguments": [
+            "--background-index",
+            "--clang-tidy",
+            "--query-driver=starm-clang.exe",
+            "--query-driver=starm-clang++.exe"
+        ],
+        "cmake.ctest.testExplorerIntegrationEnabled": false, // C++ TestMate organizes tests much better
+        "cmake.copyCompileCommands": "${workspaceFolder}/compile_commands.json",
+        "editor.formatOnSave": true,
+        "editor.formatOnType": true,
+        "editor.defaultFormatter": null,
+        "testMate.cpp.test.executables": "{build,Build,BUILD,out,Out,OUT}*/**/*{test,Test,TEST}*",
+        "todo-tree.filtering.includedWorkspaces": [
+            "[]"
+        ],
+        "todo-tree.general.debug": true,
+        "todo-tree.regex.regexCaseSensitive": false,
+        "todo-tree.regex.regex": "(//|#|<!--|/\\*+|^\\s*\\*)\\s*@?($TAGS)"
+    },
+    "extensions": {
+        "recommendations": []
+    }
+}
