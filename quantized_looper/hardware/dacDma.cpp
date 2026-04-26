@@ -48,7 +48,7 @@ Dac::Dac(std::span<ComputationType, inputSize> inputData)
 
 void Dac::init()
 {
-    LoggerSingleton::get()->info("Initializing DAC");
+    LoggerSingleton::get()->info("Initializing DAC...");
     auto status = HAL_TIM_Base_Start(&htim2);
     assert_param(status == HAL_OK);
     status = HAL_DAC_Start_DMA(&hdac,
@@ -56,6 +56,6 @@ void Dac::init()
                                outputBuffer.data(),
                                outputBuffer.size(),
                                DAC_ALIGN_12B_R);
-
     assert_param(status == HAL_OK);
+    LoggerSingleton::get()->info("...Complete");
 }

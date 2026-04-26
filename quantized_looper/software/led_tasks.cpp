@@ -17,10 +17,8 @@ LedToggleAnimation::LedToggleAnimation(LedInterface* led)
 void LedToggleAnimation::operator()()
 {
     if (state) {
-        LoggerSingleton::get()->info("Turning off LED");
         led->off();
     } else {
-        LoggerSingleton::get()->info("Turning on LED");
         led->on();
     }
     state = !state;
