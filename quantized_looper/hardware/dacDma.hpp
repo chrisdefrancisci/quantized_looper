@@ -2,6 +2,8 @@
  * @file dac.hpp
  * @author Chris DeFrancisci (chrisdefrancisci@gmail.com)
  * @brief Implements a DAC wrapper for channel 1 of the onboard DAC.
+ *
+ * This corresponds to pin A4 on the STM32F767ZI.
  * @date 2026-03-24
  */
 #pragma once
@@ -13,8 +15,9 @@
 
 #include <quantized_looper/utils/definitions.hpp>
 #include <reusable_synth/hardware/circular_dma.hpp>
+#include <reusable_synth/utils/noncopyable.hpp>
 
-class Dac
+class Dac : Noncopyable
 {
 public:
     using ComputationType = QuantizedLooper::ComputationType;
@@ -25,7 +28,7 @@ public:
 
     Dac(std::span<ComputationType, inputSize> inputData);
 
-    static void init();
+    static void start();
 
     void execute()
     {
@@ -35,12 +38,6 @@ public:
                                QuantizedLooper::scale_output);
     }
     auto isReady() -> bool { return dmaManager.isReady(); }
-
-    Dac(const Dac&) = delete;
-    auto operator=(const Dac&) -> Dac& = delete;
-    Dac(Dac&&) = delete;
-    auto operator=(Dac&&) = delete;
-    ~Dac() = default;
 
 private:
     std::span<ComputationType, inputSize> memoryData;

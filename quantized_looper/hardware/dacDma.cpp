@@ -15,7 +15,7 @@
 #include "stm32f7xx_hal.h"
 #include "stm32f7xx_hal_dac.h"
 #include "stm32f7xx_hal_tim.h"
-#include <tim.h>
+#include "tim.h"
 
 #include <quantized_looper/utils/logger_singleton.hpp>
 #include <reusable_synth/hardware/interrupt_handler.hpp>
@@ -46,7 +46,7 @@ Dac::Dac(std::span<ComputationType, inputSize> inputData)
       &dmaManager);
 }
 
-void Dac::init()
+void Dac::start()
 {
     LoggerSingleton::get()->info("Initializing DAC...");
     auto status = HAL_TIM_Base_Start(&htim2);

@@ -5,13 +5,17 @@
 #include <cstdint>
 #include <cstring>
 #include <memory>
+#include <sstream>
+#include <strstream>
 #include <vector>
 
 // STM32 includes
+#include "adc.h"
 #include "dac.h"
 #include "dma.h"
 #include "stm32f767xx.h"
 #include "stm32f7xx_hal.h"
+#include "stm32f7xx_hal_adc.h"
 #include "stm32f7xx_hal_dac.h"
 #include "stm32f7xx_hal_tim.h"
 #include "stm32f7xx_hal_uart.h"
@@ -21,6 +25,7 @@
 #include <usart.h>
 
 // Custom includes
+#include <quantized_looper/hardware/adcDma.hpp>
 #include <quantized_looper/hardware/dacDma.hpp>
 #include <quantized_looper/hardware/led.hpp>
 #include <quantized_looper/software/led_tasks.hpp>
@@ -115,6 +120,7 @@ auto main() -> int
     MX_GPIO_Init();
     HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0); // Lower priority than system
     HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+    MX_ADC1_Init();
     MX_DMA_Init();
     MX_DAC_Init();
     MX_TIM2_Init();
@@ -137,19 +143,34 @@ auto main() -> int
       [&buttonTime]() -> void { buttonTime.irq(); });
 
     // Task to keep DAC on track
-    auto waveform = SineWavetable<ComputationType, 1024>(computationMin / 2.0f,
-                                                         computationMax / 2.0f);
+    auto waveform = SineWavetable<ComputationType, 1024>(computationMin / 2.0F,
+                                                         computationMax / 2.0F);
     WavetableOsc osc(waveform.data);
     osc.setFrequency(100, 96000);
-    std::array<ComputationType, computationBufferSize> inputBuffer{};
+    std::array<ComputationType, computationBufferSize> dacBuffer{};
 
-    Dac dac(inputBuffer);
-    Dac::init();
-    auto writeWaveform = [&osc, &inputBuffer, &dac]() -> void {
+    Dac dac(dacBuffer);
+    Dac::start();
+    auto writeWaveform = [&osc, &dacBuffer, &dac]() -> void {
         if (dac.isReady()) {
-            osc.increment(inputBuffer);
+            osc.increment(dacBuffer);
         }
         dac.execute();
+    };
+
+    std::array<ComputationType, computationBufferSize> adcBuffer{};
+    Adc adc(adcBuffer);
+    // Adc::start();
+    auto printAnalogValue = [&adc, &adcBuffer]() -> void {
+        // adc.execute();
+        std::stringstream stream;
+        // stream << "Analog input is: " << adcBuffer.back();
+        assert_param(HAL_ADC_Start(&hadc1) == HAL_OK);
+        assert_param(HAL_ADC_PollForConversion(&hadc1, 10) == HAL_OK);
+        uint32_t val = HAL_ADC_GetValue(&hadc1);
+        assert_param(HAL_ADC_Stop(&hadc1) == HAL_OK);
+        stream << "Analog input is: " << float(val);
+        LoggerSingleton::get()->info(stream.str());
     };
 
     // Create LED handlers
@@ -176,7 +197,7 @@ auto main() -> int
     // Organize tasks in priority list
     // TODO: why do we need to explicitly cast lambdas to
     // not crash?
-    std::array<std::unique_ptr<TaskControlBlockInterface<Millis>>, 6> tasks = {
+    std::array<std::unique_ptr<TaskControlBlockInterface<Millis>>, 7> tasks = {
         std::make_unique<TaskControlBlock<Millis, decltype(writeWaveform)>>(
           writeWaveform,
           []() -> Millis { return Millis(HAL_GetTick()); },
@@ -206,7 +227,12 @@ auto main() -> int
           buttonToLed,
           []() -> Millis { return Millis(HAL_GetTick()); },
           Millis(5),
-          Millis(1))
+          Millis(1)),
+        std::make_unique<TaskControlBlock<Millis, decltype(printAnalogValue)>>(
+          printAnalogValue,
+          []() -> Millis { return Millis(HAL_GetTick()); },
+          Millis(1000),
+          Millis(30))
     };
 
     // Run tasks, do not return
