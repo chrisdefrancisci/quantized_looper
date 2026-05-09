@@ -49,9 +49,12 @@ Adc::Adc(std::span<ComputationType, outputSize> outputData)
 void Adc::start()
 {
     LoggerSingleton::get()->info("Initializing ADC...");
+    // TODO: someway to turn on this timer regardless of DMA/ADC coming first
+    //      Maybe just need to accept that status == HAL_BUSY is also fine
     // auto status = HAL_TIM_Base_Start(&htim2);
     // assert_param(status == HAL_OK);
-    auto status = HAL_ADC_Start_DMA(&hadc1, inputBuffer.data(), inputBuffer.size());
+    auto status =
+      HAL_ADC_Start_DMA(&hadc1, inputBuffer.data(), inputBuffer.size());
     assert_param(status == HAL_OK);
     LoggerSingleton::get()->info("...Complete");
 }

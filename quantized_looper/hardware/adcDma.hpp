@@ -3,7 +3,8 @@
  * @author Chris DeFrancisci (chrisdefrancisci@gmail.com)
  * @brief Implements an ADC wrapper for ADC1, IN0.
  *
- * This corresponds to pin A0 on the STM32F767ZI.
+ * This corresponds to pin PA0 on the STM32F767ZI, CN10 pin 29 on the nucleo
+ * board.
  * @date 2026-05-04
  */
 #pragma once
@@ -32,10 +33,11 @@ public:
     void execute()
     {
         dmaManager.execute<DmaDirection::PeripheralToMemory>();
-        std::ranges::transform(memoryData,
-                               convertedMemoryData.begin(),
-                               //    QuantizedLooper::scale_input);
-                               [](auto x) -> auto { return x; });
+        std::ranges::transform(
+          memoryData,
+          convertedMemoryData.begin(),
+          //    QuantizedLooper::scale_input);
+          [](AdcType x) -> ComputationType { return ComputationType(x); });
     }
 
 private:

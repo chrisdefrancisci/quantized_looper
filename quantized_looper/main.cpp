@@ -120,8 +120,8 @@ auto main() -> int
     MX_GPIO_Init();
     HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0); // Lower priority than system
     HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
-    MX_ADC1_Init();
     MX_DMA_Init();
+    MX_ADC1_Init();
     MX_DAC_Init();
     MX_TIM2_Init();
     MX_TIM3_Init();
@@ -160,16 +160,17 @@ auto main() -> int
 
     std::array<ComputationType, computationBufferSize> adcBuffer{};
     Adc adc(adcBuffer);
-    // Adc::start();
+    Adc::start();
     auto printAnalogValue = [&adc, &adcBuffer]() -> void {
-        // adc.execute();
+        adc.execute();
         std::stringstream stream;
-        // stream << "Analog input is: " << adcBuffer.back();
-        assert_param(HAL_ADC_Start(&hadc1) == HAL_OK);
-        assert_param(HAL_ADC_PollForConversion(&hadc1, 10) == HAL_OK);
-        uint32_t val = HAL_ADC_GetValue(&hadc1);
-        assert_param(HAL_ADC_Stop(&hadc1) == HAL_OK);
-        stream << "Analog input is: " << float(val);
+        ComputationType val = adcBuffer.back();
+        stream << "Analog input is: " << val;
+        // assert_param(HAL_ADC_Start(&hadc1) == HAL_OK);
+        // assert_param(HAL_ADC_PollForConversion(&hadc1, 10) == HAL_OK);
+        // uint32_t val = HAL_ADC_GetValue(&hadc1);
+        // assert_param(HAL_ADC_Stop(&hadc1) == HAL_OK);
+        // stream << "Analog input is: " << float(val);
         LoggerSingleton::get()->info(stream.str());
     };
 
