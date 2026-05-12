@@ -146,14 +146,23 @@ auto main() -> int
     auto waveform = SineWavetable<ComputationType, 1024>(computationMin / 2.0F,
                                                          computationMax / 2.0F);
     WavetableOsc osc(waveform.data);
+    WavetableOsc osc2(waveform.data);
     osc.setFrequency(100, 96000);
+    osc2.setFrequency(20, 96000);
     std::array<ComputationType, computationBufferSize> dacBuffer{};
 
     Dac dac(dacBuffer);
     Dac::start();
-    auto writeWaveform = [&osc, &dacBuffer, &dac]() -> void {
+    auto writeWaveform = [&osc, &osc2, &dacBuffer, &dac]() -> void {
         if (dac.isReady()) {
-            osc.increment(dacBuffer);
+            for (auto&& val : dacBuffer) {
+                ComputationType index = 0;
+                osc2.increment(index);
+                ComputationType scale = 80;
+                ComputationType mod = 100 + scale * index;
+                osc.setFrequency(mod, 96000);
+                osc.increment(val);
+            }
         }
         dac.execute();
     };
