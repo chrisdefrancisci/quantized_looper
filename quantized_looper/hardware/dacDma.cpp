@@ -20,7 +20,9 @@
 #include <quantized_looper/utils/logger_singleton.hpp>
 #include <reusable_synth/hardware/interrupt_handler.hpp>
 
-static std::array<Dac::DacType, Dac::outputSize> outputBuffer = { 0 };
+static std::array<Dac::DacType, Dac::outputSize> outputBuffer = {
+    0
+}; // TODO: does this have to be static? Can't this be part of the class?
 static InterruptHandler halfCompleteCallback{};
 static InterruptHandler completeCallback{};
 
@@ -50,12 +52,12 @@ void Dac::init()
 {
     LoggerSingleton::get()->info("Initializing DAC...");
     auto status = HAL_TIM_Base_Start(&htim2);
-    assert_param(status == HAL_OK);
+    assert_param(status == HAL_OK); // NOLINT(*cstyle-cast)
     status = HAL_DAC_Start_DMA(&hdac,
                                DAC_CHANNEL_1,
                                outputBuffer.data(),
                                outputBuffer.size(),
                                DAC_ALIGN_12B_R);
-    assert_param(status == HAL_OK);
+    assert_param(status == HAL_OK); // NOLINT(*cstyle-cast)
     LoggerSingleton::get()->info("...Complete");
 }

@@ -45,6 +45,7 @@ public:
 private:
     std::span<ComputationType, inputSize> memoryData;
     std::array<DacType, inputSize> convertedMemoryData{};
-    std::span<DacType, outputSize> periphData;
+    std::span<DacType, outputSize> periphData; // TODO: I think this can be made
+                                               // to be the array that DMA uses
     CircularDma<DacType, inputSize> dmaManager;
 };
