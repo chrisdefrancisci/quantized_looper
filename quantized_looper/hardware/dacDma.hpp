@@ -29,7 +29,7 @@ public:
 
     void execute()
     {
-        dmaManager.execute<DmaDirection::MemoryToPeripheral>();
+        dmaManager.execute();
         std::ranges::transform(memoryData,
                                convertedMemoryData.begin(),
                                QuantizedLooper::scale_output);
@@ -47,5 +47,6 @@ private:
     std::array<DacType, inputSize> convertedMemoryData{};
     std::span<DacType, outputSize> periphData; // TODO: I think this can be made
                                                // to be the array that DMA uses
-    CircularDma<DacType, inputSize> dmaManager;
+    CircularDma<DmaDirection::PeripheralToMemory, 1, DacType, inputSize>
+      dmaManager;
 };
