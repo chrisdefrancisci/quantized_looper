@@ -44,6 +44,6 @@ private:
     std::array<DacType, inputSize> convertedMemoryData{};
     std::span<DacType, outputSize> periphData; // TODO: I think this can be made
                                                // to be the array that DMA uses
-    CircularDma<DmaDirection::PeripheralToMemory, 1, DacType, inputSize>
+    CircularDma<DmaDirection::MemoryToPeripheral, 1, DacType, inputSize>
       dmaManager;
 };

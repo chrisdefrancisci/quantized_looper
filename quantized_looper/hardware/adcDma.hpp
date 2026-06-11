@@ -44,6 +44,6 @@ private:
     std::array<AdcType, outputSize> memoryData{};
     std::span<ComputationType, outputSize> convertedMemoryData;
     std::span<AdcType, inputSize> periphData;
-    CircularDma<DmaDirection::MemoryToPeripheral, 1, AdcType, outputSize>
+    CircularDma<DmaDirection::PeripheralToMemory, 1, AdcType, outputSize>
       dmaManager;
 };
