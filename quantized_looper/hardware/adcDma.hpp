@@ -23,8 +23,11 @@ class Adc : Noncopyable
 public:
     using ComputationType = QuantizedLooper::ComputationType;
     using AdcType = QuantizedLooper::AnalogInterfaceType;
-    constexpr static int outputSize = QuantizedLooper::computationBufferSize;
-    constexpr static int inputSize = QuantizedLooper::analogInterfaceBufferSize;
+    constexpr static int nChannels = 2;
+    constexpr static int outputSize =
+      nChannels * QuantizedLooper::computationBufferSize;
+    constexpr static int inputSize =
+      nChannels * QuantizedLooper::analogInterfaceBufferSize;
 
     Adc(std::span<ComputationType, outputSize> outputData);
 
@@ -44,6 +47,9 @@ private:
     std::array<AdcType, outputSize> memoryData{};
     std::span<ComputationType, outputSize> convertedMemoryData;
     std::span<AdcType, inputSize> periphData;
-    CircularDma<DmaDirection::PeripheralToMemory, 1, AdcType, outputSize>
+    CircularDma<DmaDirection::PeripheralToMemory,
+                nChannels,
+                AdcType,
+                outputSize>
       dmaManager;
 };

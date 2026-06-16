@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <cstring>
 #include <memory>
+#include <ranges>
 #include <sstream>
 #include <strstream>
 #include <vector>
@@ -167,14 +168,18 @@ auto main() -> int
         dac.execute();
     };
 
-    std::array<ComputationType, computationBufferSize> adcBuffer{};
+    std::array<ComputationType, computationBufferSize * Adc::nChannels>
+      adcBuffer{};
     Adc adc(adcBuffer);
     Adc::start();
     auto printAnalogValue = [&adc, &adcBuffer]() -> void {
         adc.execute();
         std::stringstream stream;
-        ComputationType val = adcBuffer.back();
-        stream << "Analog input is: " << val;
+        auto adcBuff1 = adcBuffer | std::views::take(computationBufferSize);
+        auto adcBuff2 = adcBuffer | std::views::drop(computationBufferSize);
+        ComputationType val1 = adcBuff1.back();
+        ComputationType val2 = adcBuff2.back();
+        stream << "Analog input is: " << val1 << ", " << val2;
         // assert_param(HAL_ADC_Start(&hadc1) == HAL_OK);
         // assert_param(HAL_ADC_PollForConversion(&hadc1, 10) == HAL_OK);
         // uint32_t val = HAL_ADC_GetValue(&hadc1);
