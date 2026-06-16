@@ -148,6 +148,21 @@ auto main() -> int
     tempoButton.registerEdgeCallback(
       [&buttonTime]() -> void { buttonTime.irq(); });
 
+    std::array<ComputationType, computationBufferSize * Adc::nChannels>
+      adcBuffer{};
+    Adc adc(adcBuffer);
+    Adc::start();
+    auto printAnalogValue = [&adc, &adcBuffer]() -> void {
+        adc.execute();
+        std::stringstream stream;
+        auto adcBuff1 = adcBuffer | std::views::take(computationBufferSize);
+        auto adcBuff2 = adcBuffer | std::views::drop(computationBufferSize);
+        ComputationType val1 = adcBuff1.back();
+        ComputationType val2 = adcBuff2.back();
+        stream << "Analog input is: " << val1 << ", " << val2;
+        LoggerSingleton::get()->info(stream.str());
+    };
+
     // Task to keep DAC on track
     constexpr size_t tableLen = 1024;
     constexpr float waveformScale =
@@ -164,38 +179,20 @@ auto main() -> int
 
     Dac dac(dacBuffer);
     Dac::start();
-    auto writeWaveform = [&osc, &osc2, &dacBuffer, &dac]() -> void {
+    auto writeWaveform = [&osc, &osc2, &dacBuffer, &dac, &adcBuffer]() -> void {
         if (dac.isReady()) {
+            auto adcBuff2 = adcBuffer | std::views::drop(computationBufferSize);
+            ComputationType scale = ((adcBuff2.back() - computationMin) /
+                                     (computationMax - computationMin));
             for (auto&& val : dacBuffer) {
                 ComputationType index = 0;
                 osc2.increment(index);
-                const ComputationType scale = 0.8;
                 ComputationType mod = freqCarrier * (1.0F + scale * index);
                 osc.setFrequency(mod, QuantizedLooper::sampleRate);
                 osc.increment(val);
             }
         }
         dac.execute();
-    };
-
-    std::array<ComputationType, computationBufferSize * Adc::nChannels>
-      adcBuffer{};
-    Adc adc(adcBuffer);
-    Adc::start();
-    auto printAnalogValue = [&adc, &adcBuffer]() -> void {
-        adc.execute();
-        std::stringstream stream;
-        auto adcBuff1 = adcBuffer | std::views::take(computationBufferSize);
-        auto adcBuff2 = adcBuffer | std::views::drop(computationBufferSize);
-        ComputationType val1 = adcBuff1.back();
-        ComputationType val2 = adcBuff2.back();
-        stream << "Analog input is: " << val1 << ", " << val2;
-        // assert_param(HAL_ADC_Start(&hadc1) == HAL_OK);
-        // assert_param(HAL_ADC_PollForConversion(&hadc1, 10) == HAL_OK);
-        // uint32_t val = HAL_ADC_GetValue(&hadc1);
-        // assert_param(HAL_ADC_Stop(&hadc1) == HAL_OK);
-        // stream << "Analog input is: " << float(val);
-        LoggerSingleton::get()->info(stream.str());
     };
 
     // Create LED handlers

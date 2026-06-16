@@ -36,11 +36,12 @@ public:
     void execute()
     {
         dmaManager.execute();
-        std::ranges::transform(
-          memoryData,
-          convertedMemoryData.begin(),
-          //    QuantizedLooper::scale_input);
-          [](AdcType x) -> ComputationType { return ComputationType(x); });
+        std::ranges::transform(memoryData,
+                               convertedMemoryData.begin(),
+                               //    QuantizedLooper::scale_input);
+                               [](AdcType x) -> ComputationType {
+                                   return QuantizedLooper::scale_input(x);
+                               });
     }
 
 private:
