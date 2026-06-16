@@ -55,6 +55,6 @@ void Adc::start()
     // assert_param(status == HAL_OK);
     auto status =
       HAL_ADC_Start_DMA(&hadc1, inputBuffer.data(), inputBuffer.size());
-    assert_param(status == HAL_OK);
+    assert_param(status == HAL_OK); // NOLINT(*cstyle-cast)
     LoggerSingleton::get()->info("...Complete");
 }

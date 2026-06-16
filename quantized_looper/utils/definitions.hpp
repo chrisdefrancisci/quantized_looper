@@ -16,8 +16,11 @@ using ComputationType = float;
 using AnalogInterfaceType = uint32_t;
 using TickType = std::chrono::duration<uint32_t, std::milli>;
 
-constexpr int computationBufferSize = 256;
-constexpr int analogInterfaceBufferSize = computationBufferSize * 2;
+/** Sample rate of hardware and processing in Hz */
+constexpr int sampleRate = 96000;
+
+constexpr size_t computationBufferSize = 256;
+constexpr size_t analogInterfaceBufferSize = computationBufferSize * 2;
 
 constexpr ComputationType computationMin = -1.0;
 constexpr ComputationType computationMax = 1.0;
