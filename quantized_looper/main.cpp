@@ -148,6 +148,7 @@ auto main() -> int
     tempoButton.registerEdgeCallback(
       [&buttonTime]() -> void { buttonTime.irq(); });
 
+    // TODO: Start here - this should be wrapped by graph / vertex
     std::array<ComputationType, computationBufferSize * Adc::nChannels>
       adcBuffer{};
     Adc adc(adcBuffer);
@@ -194,6 +195,7 @@ auto main() -> int
         }
         dac.execute();
     };
+    // TODO: End here - wrapped by graph / vertex
 
     // Create LED handlers
     auto led1 = Led<TIM_HandleTypeDef>(

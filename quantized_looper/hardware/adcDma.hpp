@@ -38,10 +38,19 @@ public:
         dmaManager.execute();
         std::ranges::transform(memoryData,
                                convertedMemoryData.begin(),
-                               //    QuantizedLooper::scale_input);
                                [](AdcType x) -> ComputationType {
                                    return QuantizedLooper::scale_input(x);
                                });
+    }
+
+    template<size_t Index>
+    auto getAdcBuffer()
+      -> std::span<const AdcType, QuantizedLooper::computationBufferSize>
+    {
+        return std::span<const AdcType, QuantizedLooper::computationBufferSize>(
+          memoryData |
+          std::views::drop(QuantizedLooper::computationBufferSize) |
+          std::views::take(QuantizedLooper::computationBufferSize));
     }
 
 private:
