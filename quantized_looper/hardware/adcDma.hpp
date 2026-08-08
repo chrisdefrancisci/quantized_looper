@@ -44,17 +44,34 @@ public:
     }
 
     template<size_t Index>
-    auto getAdcBuffer()
+    constexpr auto getRawInput()
       -> std::span<const AdcType, QuantizedLooper::computationBufferSize>
     {
+        static_assert(Index < nChannels,
+                      "ADC Index must be between 0 and nChannels - 1");
         return std::span<const AdcType, QuantizedLooper::computationBufferSize>(
           memoryData |
-          std::views::drop(QuantizedLooper::computationBufferSize) |
+          std::views::drop(QuantizedLooper::computationBufferSize * Index) |
+          std::views::take(QuantizedLooper::computationBufferSize));
+    }
+
+    template<size_t Index>
+    constexpr auto getInput()
+      -> std::span<const ComputationType,
+                   QuantizedLooper::computationBufferSize>
+    {
+        static_assert(Index < nChannels,
+                      "ADC Index must be between 0 and nChannels - 1");
+        return std::span<const ComputationType,
+                         QuantizedLooper::computationBufferSize>(
+          convertedMemoryData |
+          std::views::drop(QuantizedLooper::computationBufferSize * Index) |
           std::views::take(QuantizedLooper::computationBufferSize));
     }
 
 private:
     std::array<AdcType, outputSize> memoryData{};
+    // TODO: why doesn't adcDma own "convertedMemoryData"?
     std::span<ComputationType, outputSize> convertedMemoryData;
     std::span<AdcType, inputSize> periphData;
     CircularDma<DmaDirection::PeripheralToMemory,

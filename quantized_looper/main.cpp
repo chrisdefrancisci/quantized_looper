@@ -153,14 +153,19 @@ auto main() -> int
       adcBuffer{};
     Adc adc(adcBuffer);
     Adc::start();
-    auto printAnalogValue = [&adc, &adcBuffer]() -> void {
+    auto printAnalogValue = [&adc]() -> void {
         adc.execute();
         std::stringstream stream;
-        auto adcBuff1 = adcBuffer | std::views::take(computationBufferSize);
-        auto adcBuff2 = adcBuffer | std::views::drop(computationBufferSize);
+        // auto adcBuff1 = adcBuffer | std::views::take(computationBufferSize);
+        auto adcRawBuff1 = adc.getRawInput<0>();
+        auto adcBuff1 = adc.getInput<0>();
+        // auto adcBuff2 = adcBuffer | std::views::drop(computationBufferSize);
+        auto adcRawBuff2 = adc.getRawInput<1>();
+        auto adcBuff2 = adc.getInput<1>();
         ComputationType val1 = adcBuff1.back();
         ComputationType val2 = adcBuff2.back();
-        stream << "Analog input is: " << val1 << ", " << val2;
+        stream << "Analog input is: " << adcRawBuff1.back() << " -> " << val1
+               << ", " << adcRawBuff2.back() << " -> " << val2;
         LoggerSingleton::get()->info(stream.str());
     };
 
@@ -180,9 +185,9 @@ auto main() -> int
 
     Dac dac(dacBuffer);
     Dac::start();
-    auto writeWaveform = [&osc, &osc2, &dacBuffer, &dac, &adcBuffer]() -> void {
+    auto writeWaveform = [&osc, &osc2, &dacBuffer, &dac, &adc]() -> void {
         if (dac.isReady()) {
-            auto adcBuff2 = adcBuffer | std::views::drop(computationBufferSize);
+            auto adcBuff2 = adc.getInput<1>();
             ComputationType scale = ((adcBuff2.back() - computationMin) /
                                      (computationMax - computationMin));
             for (auto&& val : dacBuffer) {
