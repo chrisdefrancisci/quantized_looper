@@ -149,10 +149,8 @@ auto main() -> int
       [&buttonTime]() -> void { buttonTime.irq(); });
 
     // TODO: Start here - this should be wrapped by graph / vertex
-    std::array<ComputationType, computationBufferSize * Adc::nChannels>
-      adcBuffer{};
-    Adc adc(adcBuffer);
-    Adc::start();
+    Adc adc;
+    adc.start();
     auto printAnalogValue = [&adc]() -> void {
         adc.execute();
         std::stringstream stream;

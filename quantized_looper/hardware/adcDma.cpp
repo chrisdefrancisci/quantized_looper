@@ -20,7 +20,6 @@
 #include <quantized_looper/utils/logger_singleton.hpp>
 #include <reusable_synth/hardware/interrupt_handler.hpp>
 
-static std::array<Adc::AdcType, Adc::inputSize> inputBuffer = { 0 };
 static InterruptHandler halfCompleteCallback{};
 static InterruptHandler completeCallback{};
 
@@ -34,9 +33,8 @@ extern "C" void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
     completeCallback();
 }
 
-Adc::Adc(std::span<ComputationType, outputSize> outputData)
-  : convertedMemoryData(outputData)
-  , periphData(inputBuffer)
+Adc::Adc()
+  : periphData(inputBuffer)
   , dmaManager(memoryData, inputBuffer)
 {
     // Connect callbacks

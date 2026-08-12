@@ -29,9 +29,9 @@ public:
     constexpr static int inputSize =
       nChannels * QuantizedLooper::analogInterfaceBufferSize;
 
-    Adc(std::span<ComputationType, outputSize> outputData);
+    Adc();
 
-    static void start();
+    void start();
 
     void execute()
     {
@@ -71,8 +71,8 @@ public:
 
 private:
     std::array<AdcType, outputSize> memoryData{};
-    // TODO: why doesn't adcDma own "convertedMemoryData"?
-    std::span<ComputationType, outputSize> convertedMemoryData;
+    std::array<ComputationType, outputSize> convertedMemoryData{};
+    std::array<AdcType, inputSize> inputBuffer{};
     std::span<AdcType, inputSize> periphData;
     CircularDma<DmaDirection::PeripheralToMemory,
                 nChannels,
